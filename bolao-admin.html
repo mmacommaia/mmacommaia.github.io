@@ -23,9 +23,10 @@
   .grow { flex: 1; min-width: 120px; }
   .muted { color: var(--muted); font-size: 13px; }
   .msg { min-height: 22px; color: var(--gold); font-size: 14px; }
-  .fight { display: grid; grid-template-columns: 1fr 110px 120px; gap: 6px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
+  .fight { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+  .fight b { grid-column: 1 / -1; }
   .fight:first-child { border-top: 0; }
-  @media (max-width: 520px) { .fight { grid-template-columns: 1fr 1fr; } .fight b { grid-column: 1 / -1; } }
+  @media (max-width: 520px) { .fight { grid-template-columns: 1fr 1fr; } }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   td { padding: 4px 2px; border-top: 1px solid var(--line); }
   [hidden] { display: none !important; }
@@ -53,7 +54,7 @@
         <div class="grow"><label>Data do evento</label><input id="evDate" type="date"></div>
         <div class="grow"><label>Palpites fecham em (horário de Brasília)</label><input id="evLock" type="datetime-local"></div>
       </div>
-      <label>Lutas (uma por linha, no formato <b>Lutador A x Lutador B</b>)</label>
+      <label>Lutas (uma por linha, no formato <b>Lutador A x Lutador B</b>). Comece pela luta principal: as 2 primeiras ficam como principais (vale palpite de round).</label>
       <textarea id="evFights" placeholder="Alex Pereira x Magomed Ankalaev&#10;Charles Oliveira x Arman Tsarukyan"></textarea>
       <div class="row" style="margin-top:10px"><button id="btnCreate">Criar evento</button></div>
     </div>
@@ -77,6 +78,8 @@ const $ = id => document.getElementById(id);
 const say = m => { $('msg').textContent = m || ''; };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const MET = { ko: 'Nocaute', sub: 'Finalização', dec: 'Decisão' };
+// mesma conta do jogo (online.js): vencedor 3 · zebra +2 · método +2 · round +2 (principal, nocaute/finalização) · golpe de ouro x2
+function fightPts(f, k) { if (!k || !f.w || k.w !== f.w) return 0; let p = 3; if (f.dog && f.dog === f.w) p += 2; if (k.m && k.m === f.m) { p += 2; if (f.main && f.r && k.r && (f.m === 'ko' || f.m === 'sub') && +k.r === +f.r) p += 2; } return k.x2 ? p * 2 : p; }
 
 $('btnLogin').onclick = async () => { say('Entrando…'); try { await auth.signInWithEmailAndPassword($('email').value.trim(), $('pass').value); say(''); } catch (e) { say('Não entrou: confira e-mail e senha. (' + e.code + ')'); } };
 $('btnOut').onclick = () => auth.signOut();
@@ -94,7 +97,8 @@ $('btnCreate').onclick = async () => {
   const fights = $('evFights').value.split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => { const p = l.split(/\s+(?:x|vs\.?|X|VS)\s+/); return p.length === 2 ? { id: 'f' + (i + 1), a: p[0].trim(), b: p[1].trim() } : null; });
   if (!name || !date || !lock) return say('Preencha nome, data e quando os palpites fecham.');
   if (!fights.length || fights.includes(null)) return say('Confira as lutas: uma por linha, no formato "Lutador A x Lutador B".');
-  try { await db.collection('bolao').add({ name, date: brt(date + 'T12:00'), lock, status: 'open', fights }); say('✅ Evento criado. Já aparece no jogo.'); $('evName').value = ''; $('evFights').value = ''; loadEvents(); }
+  fights.forEach((f, i) => { f.main = i < 2; f.rounds = i === 0 ? 5 : 3; });
+  try { await db.collection('bolao').add({ name, date: brt(date + 'T12:00'), lock, status: 'open', season: date.slice(0, 7), boost: 1, fights }); say('✅ Evento criado. As 2 primeiras lutas ficaram como principais (com round); ajuste abaixo se quiser.'); $('evName').value = ''; $('evFights').value = ''; loadEvents(); }
   catch (e) { say('Não salvou: ' + e.message); }
 };
 
@@ -113,33 +117,53 @@ function eventCard(id, ev) {
       <select data-k="status" style="width:auto"><option value="open">Aberto</option><option value="closed">Fechado</option><option value="done">Encerrado</option></select></div>
     <p class="muted">Palpites fecham: ${esc(fmtBrt(ev.lock))}</p>
     <div>${(ev.fights || []).map((f, i) => `<div class="fight"><b>${esc(f.a)} x ${esc(f.b)}</b>
+      <label style="margin:0;display:flex;gap:4px;align-items:center"><input type="checkbox" data-i="${i}" data-k="main" style="width:auto"> ⭐ Principal</label>
+      <select data-i="${i}" data-k="rounds"><option value="3">3 rounds</option><option value="5">5 rounds</option></select>
+      <select data-i="${i}" data-k="dog"><option value="">Zebra: nenhuma</option><option value="a">Zebra: ${esc(f.a)}</option><option value="b">Zebra: ${esc(f.b)}</option></select>
       <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option></select>
-      <select data-i="${i}" data-k="m"><option value="">Como…</option>${Object.entries(MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></div>`).join('')}</div>
+      <select data-i="${i}" data-k="m"><option value="">Como…</option>${Object.entries(MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
+      <select data-i="${i}" data-k="r"><option value="">Round…</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">R${r}</option>`).join('')}</select></div>`).join('')}</div>
     <div class="row" style="margin-top:10px"><button data-act="save">Salvar resultados</button><button class="ghost" data-act="rank">Calcular ranking</button><button class="red" data-act="del">Apagar</button></div>
     <div class="muted" data-out></div>`;
   el.querySelector('[data-k="status"]').value = ev.status || 'open';
-  (ev.fights || []).forEach((f, i) => { el.querySelector(`[data-i="${i}"][data-k="w"]`).value = f.w || ''; el.querySelector(`[data-i="${i}"][data-k="m"]`).value = f.m || ''; });
+  (ev.fights || []).forEach((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); q('w').value = f.w || ''; q('m').value = f.m || ''; q('r').value = f.r || ''; q('dog').value = f.dog || ''; q('rounds').value = String(f.rounds || 3); q('main').checked = !!f.main; });
   const out = el.querySelector('[data-out]');
   el.querySelector('[data-act="save"]').onclick = async () => {
-    const fights = (ev.fights || []).map((f, i) => { const w = el.querySelector(`[data-i="${i}"][data-k="w"]`).value, m = el.querySelector(`[data-i="${i}"][data-k="m"]`).value; const o = { id: f.id, a: f.a, b: f.b }; if (w) o.w = w; if (w && m) o.m = m; return o; });
-    try { await db.collection('bolao').doc(id).set({ fights, status: el.querySelector('[data-k="status"]').value }, { merge: true }); ev.fights = fights; out.textContent = '✅ Resultados salvos. Agora clique em "Calcular ranking".'; }
+    const fights = (ev.fights || []).map((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: f.a, b: f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && m) o.m = m; if (w && r && (m === 'ko' || m === 'sub')) o.r = +r; return o; });
+    try { await db.collection('bolao').doc(id).set({ fights, status: el.querySelector('[data-k="status"]').value, season: ev.season || new Date(ev.date || Date.now()).toISOString().slice(0, 7) }, { merge: true }); ev.fights = fights; out.textContent = '✅ Resultados salvos. Agora clique em "Calcular ranking".'; }
     catch (e) { out.textContent = 'Erro: ' + e.message; }
   };
   el.querySelector('[data-act="rank"]').onclick = async () => {
     out.textContent = 'Calculando…';
     try {
-      const fresh = (await db.collection('bolao').doc(id).get()).data(); const picks = await db.collection('bolao').doc(id).collection('picks').get();
-      const rows = []; let batch = db.batch(), n = 0;
+      const ref = db.collection('bolao').doc(id); const fresh = (await ref.get()).data(); const picks = await ref.collection('picks').get();
+      const rows = []; const cnt = {}; let batch = db.batch(), n = 0;
       for (const d of picks.docs) {
         const p = d.data(); let pts = 0;
-        for (const f of fresh.fights || []) { const k = p.picks && p.picks[f.id]; if (!k || !f.w) continue; if (k.w === f.w) { pts += 3; if (k.m && k.m === f.m) pts += 2; } }
+        for (const f of fresh.fights || []) { const k = p.picks && p.picks[f.id]; if (k && k.w) { cnt[f.id] = cnt[f.id] || { a: 0, b: 0 }; if (k.w === 'a' || k.w === 'b') cnt[f.id][k.w]++; } pts += fightPts(f, k); }
         rows.push({ uid: d.id, name: String(p.name || 'Jogador').slice(0, 30), pts });
         batch.set(d.ref, { pts }, { merge: true }); if (++n % 400 === 0) { await batch.commit(); batch = db.batch(); }
       }
       await batch.commit();
       rows.sort((a, b) => b.pts - a.pts);
-      await db.collection('bolao').doc(id).collection('rank').doc('top').set({ list: rows.slice(0, 100), total: rows.length, at: Date.now() });
-      out.innerHTML = `✅ ${rows.length} palpites calculados. Top 3: ${rows.slice(0, 3).map((r, i) => `${i + 1}º ${esc(r.name)} (${r.pts})`).join(' · ') || '—'}`;
+      const pct = {}; for (const [k, c] of Object.entries(cnt)) { const t = c.a + c.b || 1; pct[k] = { a: Math.round(100 * c.a / t), b: Math.round(100 * c.b / t) }; }
+      await ref.collection('rank').doc('top').set({ list: rows.slice(0, 100), total: rows.length, at: Date.now() });
+      await ref.collection('rank').doc('all').set({ list: rows.slice(0, 5000), at: Date.now() });
+      await ref.collection('rank').doc('stats').set({ pct, n: rows.length, at: Date.now() });
+      // ranking do mês: soma de todos os eventos da mesma temporada
+      const season = fresh.season || new Date(fresh.date || Date.now()).toISOString().slice(0, 7);
+      const evs = await db.collection('bolao').where('season', '==', season).get(); const sum = {};
+      for (const e of evs.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = sum[r.uid] = sum[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = r.name; } }
+      const list = Object.values(sum).sort((a, b) => b.pts - a.pts);
+      const [Y, M] = season.split('-'); const label = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][+M - 1] + ' de ' + Y;
+      await db.collection('bolao_season').doc(season).set({ label, list: list.slice(0, 100), total: list.length, at: Date.now() });
+      await db.collection('bolao_season').doc(season + '_all').set({ label, list: list.slice(0, 5000), at: Date.now() }); // ligas usam a lista inteira
+      // ranking geral: soma de todos os eventos de sempre
+      const every = await db.collection('bolao').get(); const tot = {};
+      for (const e of every.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = tot[r.uid] = tot[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = r.name; } }
+      const gl = Object.values(tot).sort((a, b) => b.pts - a.pts);
+      await db.collection('bolao_season').doc('all').set({ label: 'Geral', list: gl.slice(0, 100), total: gl.length, at: Date.now() });
+      out.innerHTML = `✅ ${rows.length} palpites calculados, % da galera e ranking de ${esc(label)} atualizados. Top 3 do evento: ${rows.slice(0, 3).map((r, i) => `${i + 1}º ${esc(r.name)} (${r.pts})`).join(' · ') || '—'}`;
     } catch (e) { out.textContent = 'Erro: ' + e.message; }
   };
   el.querySelector('[data-act="del"]').onclick = async () => {
