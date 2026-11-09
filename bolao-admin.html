@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin do Bolão · Rumo à Glória</title>
+<style>
+  :root { --bg: #0f1a26; --card: #16263a; --ink: #e9eef3; --muted: #9fb0c2; --gold: #e8b44a; --red: #e0605a; --line: #2a3f57; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { color: var(--gold); font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 22px 0 8px; color: var(--gold); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 10px 0; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 3px; }
+  input, select, textarea { width: 100%; background: #0b141e; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; font: inherit; }
+  textarea { min-height: 120px; }
+  button { background: var(--gold); color: #1a1205; border: 0; border-radius: 9px; padding: 9px 14px; font-weight: 700; cursor: pointer; font: inherit; font-weight: 700; }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  button.red { background: var(--red); color: #fff; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .grow { flex: 1; min-width: 120px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .msg { min-height: 22px; color: var(--gold); font-size: 14px; }
+  .fight { display: grid; grid-template-columns: 1fr 110px 120px; gap: 6px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
+  .fight:first-child { border-top: 0; }
+  @media (max-width: 520px) { .fight { grid-template-columns: 1fr 1fr; } .fight b { grid-column: 1 / -1; } }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  td { padding: 4px 2px; border-top: 1px solid var(--line); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🎯 Admin do Bolão</h1>
+  <p class="muted">MMA - Rumo à Glória · só o dono do jogo consegue salvar aqui (as regras do banco checam o seu login).</p>
+  <div class="msg" id="msg"></div>
+
+  <section id="login" class="card">
+    <label>E-mail</label><input id="email" type="email" value="mmacommaia@gmail.com" autocomplete="username">
+    <label>Senha</label><input id="pass" type="password" autocomplete="current-password">
+    <div class="row" style="margin-top:10px"><button id="btnLogin">Entrar</button></div>
+  </section>
+
+  <section id="app" hidden>
+    <div class="row"><span class="muted grow" id="who"></span><button class="ghost" id="btnOut">Sair</button></div>
+
+    <h2>➕ Novo evento</h2>
+    <div class="card">
+      <label>Nome do evento</label><input id="evName" placeholder="UFC 330: Poatan x Ankalaev">
+      <div class="row">
+        <div class="grow"><label>Data do evento</label><input id="evDate" type="date"></div>
+        <div class="grow"><label>Palpites fecham em (horário de Brasília)</label><input id="evLock" type="datetime-local"></div>
+      </div>
+      <label>Lutas (uma por linha, no formato <b>Lutador A x Lutador B</b>)</label>
+      <textarea id="evFights" placeholder="Alex Pereira x Magomed Ankalaev&#10;Charles Oliveira x Arman Tsarukyan"></textarea>
+      <div class="row" style="margin-top:10px"><button id="btnCreate">Criar evento</button></div>
+    </div>
+
+    <h2>📋 Eventos</h2>
+    <div id="events"><p class="muted">Carregando…</p></div>
+
+    <h2>🚩 Denúncias da Arena</h2>
+    <div id="reports"><p class="muted">Carregando…</p></div>
+  </section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const CFG = { apiKey: 'AIzaSyAUOBYekhoJ7O4wITkE9XWpYjFt68-zL_U', authDomain: 'rumo-a-gloria.firebaseapp.com', projectId: 'rumo-a-gloria', storageBucket: 'rumo-a-gloria.firebasestorage.app', messagingSenderId: '586940930637', appId: '1:586940930637:web:e72926f0977183dcab9a04' };
+firebase.initializeApp(CFG);
+const auth = firebase.auth(), db = firebase.firestore();
+const $ = id => document.getElementById(id);
+const say = m => { $('msg').textContent = m || ''; };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const MET = { ko: 'Nocaute', sub: 'Finalização', dec: 'Decisão' };
+
+$('btnLogin').onclick = async () => { say('Entrando…'); try { await auth.signInWithEmailAndPassword($('email').value.trim(), $('pass').value); say(''); } catch (e) { say('Não entrou: confira e-mail e senha. (' + e.code + ')'); } };
+$('btnOut').onclick = () => auth.signOut();
+auth.onAuthStateChanged(u => {
+  const ok = u && !u.isAnonymous; $('login').hidden = !!ok; $('app').hidden = !ok;
+  if (ok) { $('who').textContent = 'Logado como ' + u.email; loadEvents(); loadReports(); }
+});
+
+// horário de Brasília (UTC-3) → milissegundos
+const brt = v => { if (!v) return 0; const [d, h] = v.split('T'); const [Y, M, D] = d.split('-').map(Number); const [hh, mm] = (h || '00:00').split(':').map(Number); return Date.UTC(Y, M - 1, D, hh + 3, mm); };
+const fmtBrt = ms => { if (!ms) return '—'; const d = new Date(ms - 3 * 3600e3); return d.toISOString().slice(0, 16).replace('T', ' ') + ' (Brasília)'; };
+
+$('btnCreate').onclick = async () => {
+  const name = $('evName').value.trim(), date = $('evDate').value, lock = brt($('evLock').value);
+  const fights = $('evFights').value.split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => { const p = l.split(/\s+(?:x|vs\.?|X|VS)\s+/); return p.length === 2 ? { id: 'f' + (i + 1), a: p[0].trim(), b: p[1].trim() } : null; });
+  if (!name || !date || !lock) return say('Preencha nome, data e quando os palpites fecham.');
+  if (!fights.length || fights.includes(null)) return say('Confira as lutas: uma por linha, no formato "Lutador A x Lutador B".');
+  try { await db.collection('bolao').add({ name, date: brt(date + 'T12:00'), lock, status: 'open', fights }); say('✅ Evento criado. Já aparece no jogo.'); $('evName').value = ''; $('evFights').value = ''; loadEvents(); }
+  catch (e) { say('Não salvou: ' + e.message); }
+};
+
+async function loadEvents() {
+  const box = $('events');
+  try {
+    const s = await db.collection('bolao').orderBy('date', 'desc').limit(10).get();
+    if (s.empty) { box.innerHTML = '<p class="muted">Nenhum evento ainda.</p>'; return; }
+    box.innerHTML = '';
+    s.forEach(doc => box.appendChild(eventCard(doc.id, doc.data())));
+  } catch (e) { box.innerHTML = '<p class="muted">Erro ao carregar: ' + esc(e.message) + '</p>'; }
+}
+function eventCard(id, ev) {
+  const el = document.createElement('div'); el.className = 'card';
+  el.innerHTML = `<div class="row"><b class="grow">${esc(ev.name)}</b>
+      <select data-k="status" style="width:auto"><option value="open">Aberto</option><option value="closed">Fechado</option><option value="done">Encerrado</option></select></div>
+    <p class="muted">Palpites fecham: ${esc(fmtBrt(ev.lock))}</p>
+    <div>${(ev.fights || []).map((f, i) => `<div class="fight"><b>${esc(f.a)} x ${esc(f.b)}</b>
+      <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option></select>
+      <select data-i="${i}" data-k="m"><option value="">Como…</option>${Object.entries(MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></div>`).join('')}</div>
+    <div class="row" style="margin-top:10px"><button data-act="save">Salvar resultados</button><button class="ghost" data-act="rank">Calcular ranking</button><button class="red" data-act="del">Apagar</button></div>
+    <div class="muted" data-out></div>`;
+  el.querySelector('[data-k="status"]').value = ev.status || 'open';
+  (ev.fights || []).forEach((f, i) => { el.querySelector(`[data-i="${i}"][data-k="w"]`).value = f.w || ''; el.querySelector(`[data-i="${i}"][data-k="m"]`).value = f.m || ''; });
+  const out = el.querySelector('[data-out]');
+  el.querySelector('[data-act="save"]').onclick = async () => {
+    const fights = (ev.fights || []).map((f, i) => { const w = el.querySelector(`[data-i="${i}"][data-k="w"]`).value, m = el.querySelector(`[data-i="${i}"][data-k="m"]`).value; const o = { id: f.id, a: f.a, b: f.b }; if (w) o.w = w; if (w && m) o.m = m; return o; });
+    try { await db.collection('bolao').doc(id).set({ fights, status: el.querySelector('[data-k="status"]').value }, { merge: true }); ev.fights = fights; out.textContent = '✅ Resultados salvos. Agora clique em "Calcular ranking".'; }
+    catch (e) { out.textContent = 'Erro: ' + e.message; }
+  };
+  el.querySelector('[data-act="rank"]').onclick = async () => {
+    out.textContent = 'Calculando…';
+    try {
+      const fresh = (await db.collection('bolao').doc(id).get()).data(); const picks = await db.collection('bolao').doc(id).collection('picks').get();
+      const rows = []; let batch = db.batch(), n = 0;
+      for (const d of picks.docs) {
+        const p = d.data(); let pts = 0;
+        for (const f of fresh.fights || []) { const k = p.picks && p.picks[f.id]; if (!k || !f.w) continue; if (k.w === f.w) { pts += 3; if (k.m && k.m === f.m) pts += 2; } }
+        rows.push({ uid: d.id, name: String(p.name || 'Jogador').slice(0, 30), pts });
+        batch.set(d.ref, { pts }, { merge: true }); if (++n % 400 === 0) { await batch.commit(); batch = db.batch(); }
+      }
+      await batch.commit();
+      rows.sort((a, b) => b.pts - a.pts);
+      await db.collection('bolao').doc(id).collection('rank').doc('top').set({ list: rows.slice(0, 100), total: rows.length, at: Date.now() });
+      out.innerHTML = `✅ ${rows.length} palpites calculados. Top 3: ${rows.slice(0, 3).map((r, i) => `${i + 1}º ${esc(r.name)} (${r.pts})`).join(' · ') || '—'}`;
+    } catch (e) { out.textContent = 'Erro: ' + e.message; }
+  };
+  el.querySelector('[data-act="del"]').onclick = async () => {
+    if (!confirm('Apagar o evento "' + ev.name + '"? Os palpites dele somem do jogo.')) return;
+    try { await db.collection('bolao').doc(id).delete(); loadEvents(); } catch (e) { out.textContent = 'Erro: ' + e.message; }
+  };
+  return el;
+}
+
+async function loadReports() {
+  const box = $('reports');
+  try {
+    const s = await db.collection('reports').orderBy('at', 'desc').limit(30).get();
+    if (s.empty) { box.innerHTML = '<p class="muted">Nenhuma denúncia. 👍</p>'; return; }
+    box.innerHTML = '';
+    s.forEach(doc => {
+      const r = doc.data(); const el = document.createElement('div'); el.className = 'card';
+      el.innerHTML = `<b>${esc(r.name)}${r.nick ? ' "' + esc(r.nick) + '"' : ''}</b><p class="muted">Denunciado em ${esc(new Date(r.at).toLocaleString('pt-BR'))}</p><div class="row"><button class="red" data-a="ban">Remover lutador da Arena</button><button class="ghost" data-a="ok">Ignorar</button></div>`;
+      el.querySelector('[data-a="ban"]').onclick = async () => { try { await db.collection('arena').doc(r.target).delete(); await doc.ref.delete(); el.remove(); say('Lutador removido da Arena.'); } catch (e) { say('Erro: ' + e.message); } };
+      el.querySelector('[data-a="ok"]').onclick = async () => { try { await doc.ref.delete(); el.remove(); } catch (e) { say('Erro: ' + e.message); } };
+      box.appendChild(el);
+    });
+  } catch (e) { box.innerHTML = '<p class="muted">Erro ao carregar: ' + esc(e.message) + '</p>'; }
+}
+</script>
+</body>
+</html>
