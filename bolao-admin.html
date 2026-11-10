@@ -324,6 +324,9 @@ function eventCard(id, ev) {
       const profs = {}; try { (await db.collection('bolao_user').get()).forEach(d => { profs[d.id] = d.data(); }); } catch (e) { }
       const nameOf = (uid, fb) => String((profs[uid] && profs[uid].name) || fb || 'Jogador').slice(0, 30);
       const nRes = (fresh.fights || []).filter(isRes).length;
+      // no meio do evento (salvando luta a luta) só os rankings são gravados; a ficha de cada jogador (1 gravação por pessoa) fica pro fim do card ou pro botão Recalcular.
+      // Assim um card de 13 lutas com mil jogadores não estoura o limite diário de gravações do plano gratuito.
+      const full = !pre || (fresh.fights || []).every(f => f.w);
       const rows = []; const cnt = {}; let batch = db.batch(), n = 0;
       for (const d of picks.docs) {
         const p = d.data(); let pts = 0; const bid = boostId(fresh.fights || [], p.picks);
@@ -331,9 +334,9 @@ function eventCard(id, ev) {
         const cc = (profs[d.id] && profs[d.id].cc) || p.cc || '';
         const hits = (fresh.fights || []).filter(f => isRes(f) && p.picks && p.picks[f.id] && p.picks[f.id].w === f.w).length;
         rows.push({ uid: d.id, name: nameOf(d.id, p.name), pts, hits, cc: /^[A-Z]{2}$/.test(cc) ? cc : 'BR' });
-        batch.set(d.ref, { pts }, { merge: true }); if (++n % 400 === 0) { await batch.commit(); batch = db.batch(); }
+        if (full) { batch.set(d.ref, { pts }, { merge: true }); if (++n % 400 === 0) { await batch.commit(); batch = db.batch(); } }
       }
-      await batch.commit();
+      if (full) await batch.commit();
       rows.sort((a, b) => b.pts - a.pts);
       rows.forEach((r, i) => { r.pos = i && r.pts === rows[i - 1].pts ? rows[i - 1].pos : i + 1; }); // empate divide a posição
       // histórico de cada jogador (perfil no jogo): só quando já tem resultado. A gravação sai lá embaixo, junto com a posição no mês.
@@ -353,14 +356,14 @@ function eventCard(id, ev) {
       // posição de cada jogador na temporada (mês): vira medalha no perfil e prêmio na carreira quando o mês acaba
       list.forEach((r, i) => { r.pos = i && r.pts === list[i - 1].pts ? list[i - 1].pos : i + 1; });
       if (nRes) for (const r of list) { const x = stat[r.uid] = stat[r.uid] || {}; x.seasons = { [season]: { p: r.pts, pos: r.pos, of: list.length, ev: r.ev } }; }
-      { let b2 = db.batch(), k = 0; for (const [uid, x] of Object.entries(stat)) { b2.set(db.collection('bolao_stat').doc(uid), Object.assign({ at: Date.now() }, x), { merge: true }); if (++k % 400 === 0) { await b2.commit(); b2 = db.batch(); } } await b2.commit(); }
+      if (full) { let b2 = db.batch(), k = 0; for (const [uid, x] of Object.entries(stat)) { b2.set(db.collection('bolao_stat').doc(uid), Object.assign({ at: Date.now() }, x), { merge: true }); if (++k % 400 === 0) { await b2.commit(); b2 = db.batch(); } } await b2.commit(); }
       // ranking geral: soma de todos os eventos de sempre
       const every = await db.collection('bolao').get(); const tot = {};
       for (const e of every.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = tot[r.uid] = tot[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = nameOf(r.uid, r.name); x.cc = (profs[r.uid] && profs[r.uid].cc) || r.cc || x.cc || 'BR'; } }
       const gl = Object.values(tot).sort((a, b) => b.pts - a.pts);
       await db.collection('bolao_season').doc('all').set({ label: 'Geral', list: gl.slice(0, 100), total: gl.length, byCc: byCountry(gl), at: Date.now() });
       await db.collection('bolao_season').doc('all_all').set({ label: 'Geral', list: gl.slice(0, 5000), at: Date.now() }); // ligas: ranking desde o começo
-      out.innerHTML = `${pre ? esc(pre) : '✅ '}${rows.length} palpites calculados, % da galera e ranking de ${esc(label)} atualizados. Top 3 do evento: ${rows.slice(0, 3).map((r, i) => `${i + 1}º ${esc(r.name)} (${r.pts})`).join(' · ') || '—'}`;
+      out.innerHTML = `${pre ? esc(pre) : '✅ '}${rows.length} palpites calculados, % da galera e ranking de ${esc(label)} atualizados${full ? '' : ' (parcial: perfis e medalhas saem quando todas as lutas tiverem resultado)'}. Top 3 do evento: ${rows.slice(0, 3).map((r, i) => `${i + 1}º ${esc(r.name)} (${r.pts})`).join(' · ') || '—'}`;
     } catch (e) { out.textContent = (pre ? 'Resultados salvos, mas o ranking não calculou. Clique em "Recalcular ranking". ' : '') + 'Erro: ' + e.message; }
   };
   el.querySelector('[data-act="del"]').onclick = async () => {
