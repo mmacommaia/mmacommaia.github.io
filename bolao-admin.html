@@ -8,6 +8,8 @@
 <style>
   :root { --bg: #0f1a26; --card: #16263a; --ink: #e9eef3; --muted: #9fb0c2; --gold: #e8b44a; --red: #e0605a; --line: #2a3f57; }
   * { box-sizing: border-box; }
+  .fight.p-ok { outline: 2px solid #3fbf7f; } .fight.p-chk { outline: 2px solid #f2c94c; }
+  textarea { background: #0b141e; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: inherit; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   main { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
   h1 { color: var(--gold); font-size: 22px; margin: 0 0 4px; }
@@ -108,6 +110,54 @@ const MET = { ko: 'Nocaute', sub: 'Finalização', dec: 'Decisão' };
 // ranking nacional: top 50 de cada país (a lista já vem ordenada)
 function byCountry(list) { const o = {}; for (const r of list) { const c = r.cc || 'BR'; const x = o[c] = o[c] || { list: [], total: 0 }; x.total++; if (x.list.length < 50) x.list.push({ uid: r.uid, name: r.name, pts: r.pts }); } return o; }
 const isRes = f => f.w === 'a' || f.w === 'b';
+// ---------- colar resultados: lê um texto copiado de qualquer site e descobre vencedor, método e round de cada luta ----------
+const plain = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9:.()\n\t ]+/g, ' ').replace(/[ \t]+/g, ' ');
+const WIN_MID = /\b(def|defeats?|defeated|derrot\w*|venc\w*|beats?|bate\w*|over|finaliz\w*|nocaute\w*|supera\w*|submete\w*|submits?|stops?|outpoints?|ko s|tko s|d)\b/;
+const LOSE_MID = /\b(perde\w*|lost to|loses to|e derrotad\w* por|foi (finalizad|nocautead|derrotad)\w* por)\b/;
+const NC_RX = /\b(no contest|sem resultado|nc|draw|empate|cancelad\w*|cancel+ed|scrapped)\b/;
+function readMethod(t) {
+  const sub = t.search(/\b(submission|finaliza\w*|sub|tap\w*|choke|armbar|mata leao|guilhotina|guillotine|triangulo|triangle|kimura|chave|heel hook|rear naked)\b/);
+  const ko = t.search(/\b(t?ko|knockout|nocaute\w*|doctor s? ?stoppage|interrup\w*|corner stoppage|stoppage|punches|socos|retirement)\b/);
+  const dec = t.search(/\b(decis\w*|decision|dec|unanim\w*|dividida|split|majority|majorit\w*)\b/);
+  const c = [['sub', sub], ['ko', ko], ['dec', dec]].filter(x => x[1] >= 0).sort((a, b) => a[1] - b[1]);
+  if (!c.length) return null;
+  // "TKO (submission to punches)" e parecidos: vale o que vem primeiro no texto
+  return c[0][0];
+}
+function readRound(t, max) {
+  let m = /\b(?:round|rd|r|assalto)\.? ?([1-5])\b/.exec(t) || /\b([1-5]) ?(?:o|a|st|nd|rd|th)? ?(?:round|assalto)\b/.exec(t) || /\b([1-5])\b[ \t]{0,3}\d{1,2}:\d\d\b/.exec(t);
+  const r = m ? +m[1] : 0; return r >= 1 && r <= (max || 5) ? r : 0;
+}
+// devolve, por luta, { w, m, r, sure } ou null quando não achou os dois nomes juntos no texto
+function parseResults(text, fights) {
+  const T = plain(text); const all = [];
+  const SUF = /^(jr|junior|neto|filho|ii|iii|de|da|do|dos|the)$/; const toks = n => plain(n).replace(/\./g, ' ').trim().split(' ').filter(Boolean);
+  const last = n => { const p = toks(n).filter(x => x.length > 1 && !SUF.test(x)); return p[p.length - 1] || ''; };
+  const lasts = {}; for (const f of fights) for (const n of [f.a, f.b]) { const l = last(n); lasts[l] = (lasts[l] || 0) + 1; }
+  const keys = n => { const full = plain(n).trim(), l = last(n); const t = toks(n); while (t.length > 1 && SUF.test(t[t.length - 1])) t.pop(); const base = t.join(' '); return [...new Set([full, base].concat(l.length >= 3 && lasts[l] === 1 ? [l] : []))].filter(Boolean); };
+  const find = n => { for (const k of keys(n)) { const out = []; let i = -1; const rx = new RegExp('(^|[^a-z0-9])' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![a-z0-9])', 'g'); let m; while ((m = rx.exec(T))) out.push([m.index + m[1].length, m.index + m[0].length]); if (out.length) return out; } return []; };
+  const pos = fights.map(f => ({ a: find(f.a), b: find(f.b) }));
+  const spans = pos.map(p => { let best = null; for (const x of p.a) for (const y of p.b) { const d = Math.abs(x[0] - y[0]); if (d < 170 && (!best || d < best.d)) best = { d, x, y }; } return best; });
+  const starts = spans.filter(Boolean).map(s => Math.min(s.x[0], s.y[0]));
+  return fights.map((f, i) => {
+    const s = spans[i]; if (!s) return null;
+    const aFirst = s.x[0] < s.y[0]; const first = aFirst ? s.x : s.y, second = aFirst ? s.y : s.x;
+    const mid = T.slice(first[1], second[0]); const nextStart = Math.min(...starts.filter(v => v > second[1]), second[1] + 230);
+    const tail = T.slice(second[1], nextStart); const lead = T.slice(Math.max(0, first[0] - 26), first[0]);
+    let w = '', sure = true;
+    if (LOSE_MID.test(mid)) w = aFirst ? 'b' : 'a';
+    else if (WIN_MID.test(mid)) w = aFirst ? 'a' : 'b';
+    else if (/\b(win|winner|vencedor\w*|vitoria de)\b ?:? ?$/.test(lead)) w = aFirst ? 'a' : 'b';
+    else if (/^[^a-z]{0,6}\b(wins?|vence\w*|won|ganh\w*)\b/.test(tail)) w = aFirst ? 'b' : 'a';
+    if (NC_RX.test(mid) || (!w && NC_RX.test(tail.slice(0, 80)))) return { w: 'nc', sure: false };
+    const m = readMethod(tail) || readMethod(mid);
+    if (!w && !m) return null; // os dois nomes aparecem, mas sem resultado (ex.: colaram o card, não o resultado): não inventa
+    if (!w) { w = aFirst ? 'a' : 'b'; sure = false; } // lista de resultado costuma trazer o vencedor primeiro: preenche, mas pede conferência
+    const r = m && m !== 'dec' ? readRound(tail, f.rounds || 5) : 0;
+    if (!m || (m !== 'dec' && !r)) sure = false;
+    return { w, m: m || '', r, sure };
+  });
+}
 // 'nc' = luta cancelada: não vale ponto; golpe de ouro nela passa pra primeira luta do card que valeu (igual ao jogo)
 const boostId = (fights, picks) => { const b = fights.find(f => picks && picks[f.id] && picks[f.id].x2); if (!b) return null; if (b.w !== 'nc') return b.id; const m = fights.find(isRes); return m ? m.id : null; };
 function fightPts(f, k, x2) { if (!k || !isRes(f) || k.w !== f.w) return 0; let p = 3; if (f.dog && f.dog === f.w) p += 2; if (k.m && k.m === f.m) { p += 2; if (f.r && k.r && (f.m === 'ko' || f.m === 'sub') && +k.r === +f.r) p += 2; } return (x2 === undefined ? k.x2 : x2) ? p * 2 : p; }
@@ -200,8 +250,11 @@ function eventCard(id, ev) {
       <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option><option value="nc">🚫 Cancelada / sem resultado</option></select>
       <select data-i="${i}" data-k="m"><option value="">Como…</option>${Object.entries(MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
       <select data-i="${i}" data-k="r"><option value="">Round…</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">R${r}</option>`).join('')}</select></div>`).join('')}</div>
+    <div class="row" style="margin-top:10px"><button class="ghost" data-act="paste">📋 Colar resultados</button><span class="muted">copie a lista de resultados de qualquer site e eu preencho vencedor, método e round</span></div>
+    <div data-pastebox hidden><textarea data-paste rows="7" placeholder="Cole aqui o texto com os resultados. Ex.: Ciryl Gane def. Josh Hokit via KO (punches), Round 2, 3:15" style="width:100%;margin-top:6px"></textarea>
+      <div class="row"><button data-act="fill">Preencher lutas</button><button class="ghost" data-act="pasteclose">Fechar</button></div><div class="muted" data-pasteout></div></div>
     <div class="unsaved" data-unsaved hidden>● Mudanças não salvas — clique em Salvar.</div>
-    <div class="row" style="margin-top:10px"><button data-act="save">Salvar</button><button class="ghost" data-act="rank">Calcular ranking</button><button class="red" data-act="del">Apagar</button></div>
+    <div class="row" style="margin-top:10px"><button data-act="save">Salvar</button><button class="ghost" data-act="rank">Recalcular ranking</button><button class="red" data-act="del">Apagar</button></div>
     <div class="muted" data-out></div>`;
   el.querySelector('[data-k="status"]').value = ev.status || 'open';
   (ev.fights || []).forEach((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); q('w').value = f.w || ''; q('m').value = f.m || ''; q('r').value = f.r || ''; q('dog').value = f.dog || ''; q('rounds').value = String(f.rounds || 3); q('cat').value = f.cat || ''; q('main').checked = !!f.main; q('t').value = f.t || ''; });
@@ -238,15 +291,32 @@ function eventCard(id, ev) {
     }
     dirty();
   };
+  el.querySelector('[data-act="paste"]').onclick = () => { const b = el.querySelector('[data-pastebox]'); b.hidden = !b.hidden; if (!b.hidden) el.querySelector('[data-paste]').focus(); };
+  el.querySelector('[data-act="pasteclose"]').onclick = () => { el.querySelector('[data-pastebox]').hidden = true; };
+  el.querySelector('[data-act="fill"]').onclick = () => {
+    const po = el.querySelector('[data-pasteout]'); const txt = el.querySelector('[data-paste]').value; if (!txt.trim()) { po.textContent = 'Cole o texto primeiro.'; return; }
+    const fs = ev.fights || []; const res = parseResults(txt, fs.map((f, i) => ({ a: f.a, b: f.b, rounds: +el.querySelector(`[data-i="${i}"][data-k="rounds"]`).value || 3 })));
+    let ok = 0; const check = [], miss = [];
+    res.forEach((r, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const box = q('w').closest('.fight'); box.classList.remove('p-ok', 'p-chk');
+      if (!r) { miss.push(fs[i].a + ' x ' + fs[i].b); return; }
+      q('w').value = r.w; q('m').value = r.w === 'nc' ? '' : r.m || ''; q('r').value = r.w === 'nc' || !r.r ? '' : String(r.r);
+      ok++; box.classList.add(r.sure ? 'p-ok' : 'p-chk'); if (!r.sure) check.push(fs[i].a + ' x ' + fs[i].b); });
+    if (ok) dirty();
+    po.innerHTML = `Preenchi ${ok} de ${fs.length} ${fs.length === 1 ? 'luta' : 'lutas'}.` + (check.length ? ` <b style="color:#f2c94c">Confira as amarelas:</b> ${check.map(esc).join(' · ')}.` : '') + (miss.length ? ` <b style="color:#e0605a">Não achei no texto:</b> ${miss.map(esc).join(' · ')}.` : '') + (ok ? ' Depois clique em Salvar: o ranking é calculado junto.' : '');
+  };
+  const resKey = fs => JSON.stringify((fs || []).map(f => [f.id, f.w || '', f.m || '', f.r || 0]));
   el.querySelector('[data-act="save"]').onclick = async () => {
     const fights = (ev.fights || []).map((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: f.a, b: f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && w !== 'nc' && m) o.m = m; if (w && w !== 'nc' && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
     const data = { fights, status: el.querySelector('[data-k="status"]').value, mc: Math.max(1, Math.min(15, +el.querySelector('[data-k="mc"]').value || 5)), season: ev.season || new Date(ev.date || Date.now()).toISOString().slice(0, 7), poster: firebase.firestore.FieldValue.delete(), locks: locksOf(ev.date, fights), ...lockLists(locksOf(ev.date, fights)) };
     out.textContent = 'Salvando…'; let kb = 0;
-    try { const r = await saveImgs(id, img, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB). Se lançou resultado, clique em "Calcular ranking".`; }
+    try { const r = await saveImgs(id, img, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); const changed = resKey(ev.fights) !== resKey(fights); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB).`;
+      // resultado novo ou alterado: o ranking já sai junto, sem precisar de outro clique
+      if (changed && fights.some(f => f.w)) await calc('✅ Salvo. '); }
     catch (e) { out.textContent = 'Erro: ' + e.message; }
   };
-  el.querySelector('[data-act="rank"]').onclick = async () => {
-    out.textContent = 'Calculando…';
+  el.querySelector('[data-act="rank"]').onclick = () => calc('');
+  const calc = async (pre) => {
+    out.textContent = (pre || '') + 'Calculando o ranking…';
     try {
       const ref = db.collection('bolao').doc(id); const fresh = (await ref.get()).data(); const picks = await ref.collection('picks').get();
       // nome e país que cada jogador escolheu no perfil do Bolão valem mais que o gravado no palpite
@@ -265,8 +335,8 @@ function eventCard(id, ev) {
       await batch.commit();
       rows.sort((a, b) => b.pts - a.pts);
       rows.forEach((r, i) => { r.pos = i && r.pts === rows[i - 1].pts ? rows[i - 1].pos : i + 1; }); // empate divide a posição
-      // histórico de cada jogador (perfil no jogo): só quando já tem resultado
-      if (nRes) { let b2 = db.batch(), k = 0; for (const r of rows) { b2.set(db.collection('bolao_stat').doc(r.uid), { hist: { [id]: { n: fresh.name, d: fresh.date || 0, p: r.pts, pos: r.pos, of: rows.length, h: r.hits, f: nRes } }, at: Date.now() }, { merge: true }); if (++k % 400 === 0) { await b2.commit(); b2 = db.batch(); } } await b2.commit(); }
+      // histórico de cada jogador (perfil no jogo): só quando já tem resultado. A gravação sai lá embaixo, junto com a posição no mês.
+      const stat = {}; if (nRes) for (const r of rows) stat[r.uid] = { hist: { [id]: { n: fresh.name, d: fresh.date || 0, p: r.pts, pos: r.pos, of: rows.length, h: r.hits, f: nRes } } };
       const pct = {}; for (const [k, c] of Object.entries(cnt)) { const t = c.a + c.b || 1; pct[k] = { a: Math.round(100 * c.a / t), b: Math.round(100 * c.b / t) }; }
       await ref.collection('rank').doc('top').set({ list: rows.slice(0, 100), total: rows.length, at: Date.now() });
       await ref.collection('rank').doc('all').set({ list: rows.slice(0, 5000), at: Date.now() });
@@ -279,14 +349,18 @@ function eventCard(id, ev) {
       const [Y, M] = season.split('-'); const label = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][+M - 1] + ' de ' + Y;
       await db.collection('bolao_season').doc(season).set({ label, list: list.slice(0, 100), total: list.length, byCc: byCountry(list), at: Date.now() });
       await db.collection('bolao_season').doc(season + '_all').set({ label, list: list.slice(0, 5000), at: Date.now() }); // ligas usam a lista inteira
+      // posição de cada jogador na temporada (mês): vira medalha no perfil e prêmio na carreira quando o mês acaba
+      list.forEach((r, i) => { r.pos = i && r.pts === list[i - 1].pts ? list[i - 1].pos : i + 1; });
+      if (nRes) for (const r of list) { const x = stat[r.uid] = stat[r.uid] || {}; x.seasons = { [season]: { p: r.pts, pos: r.pos, of: list.length, ev: r.ev } }; }
+      { let b2 = db.batch(), k = 0; for (const [uid, x] of Object.entries(stat)) { b2.set(db.collection('bolao_stat').doc(uid), Object.assign({ at: Date.now() }, x), { merge: true }); if (++k % 400 === 0) { await b2.commit(); b2 = db.batch(); } } await b2.commit(); }
       // ranking geral: soma de todos os eventos de sempre
       const every = await db.collection('bolao').get(); const tot = {};
       for (const e of every.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = tot[r.uid] = tot[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = nameOf(r.uid, r.name); x.cc = (profs[r.uid] && profs[r.uid].cc) || r.cc || x.cc || 'BR'; } }
       const gl = Object.values(tot).sort((a, b) => b.pts - a.pts);
       await db.collection('bolao_season').doc('all').set({ label: 'Geral', list: gl.slice(0, 100), total: gl.length, byCc: byCountry(gl), at: Date.now() });
       await db.collection('bolao_season').doc('all_all').set({ label: 'Geral', list: gl.slice(0, 5000), at: Date.now() }); // ligas: ranking desde o começo
-      out.innerHTML = `✅ ${rows.length} palpites calculados, % da galera e ranking de ${esc(label)} atualizados. Top 3 do evento: ${rows.slice(0, 3).map((r, i) => `${i + 1}º ${esc(r.name)} (${r.pts})`).join(' · ') || '—'}`;
-    } catch (e) { out.textContent = 'Erro: ' + e.message; }
+      out.innerHTML = `${pre ? esc(pre) : '✅ '}${rows.length} palpites calculados, % da galera e ranking de ${esc(label)} atualizados. Top 3 do evento: ${rows.slice(0, 3).map((r, i) => `${i + 1}º ${esc(r.name)} (${r.pts})`).join(' · ') || '—'}`;
+    } catch (e) { out.textContent = (pre ? 'Resultados salvos, mas o ranking não calculou. Clique em "Recalcular ranking". ' : '') + 'Erro: ' + e.message; }
   };
   el.querySelector('[data-act="del"]').onclick = async () => {
     if (!confirm('Apagar o evento "' + ev.name + '"? Os palpites dele somem do jogo.')) return;
