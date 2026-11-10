@@ -107,7 +107,10 @@ const MET = { ko: 'Nocaute', sub: 'Finalização', dec: 'Decisão' };
 // mesma conta do jogo (online.js): vencedor 3 · zebra +2 · método +2 · round +2 (principal, nocaute/finalização) · golpe de ouro x2
 // ranking nacional: top 50 de cada país (a lista já vem ordenada)
 function byCountry(list) { const o = {}; for (const r of list) { const c = r.cc || 'BR'; const x = o[c] = o[c] || { list: [], total: 0 }; x.total++; if (x.list.length < 50) x.list.push({ uid: r.uid, name: r.name, pts: r.pts }); } return o; }
-function fightPts(f, k) { if (!k || !f.w || k.w !== f.w) return 0; let p = 3; if (f.dog && f.dog === f.w) p += 2; if (k.m && k.m === f.m) { p += 2; if (f.r && k.r && (f.m === 'ko' || f.m === 'sub') && +k.r === +f.r) p += 2; } return k.x2 ? p * 2 : p; }
+const isRes = f => f.w === 'a' || f.w === 'b';
+// 'nc' = luta cancelada: não vale ponto; golpe de ouro nela passa pra primeira luta do card que valeu (igual ao jogo)
+const boostId = (fights, picks) => { const b = fights.find(f => picks && picks[f.id] && picks[f.id].x2); if (!b) return null; if (b.w !== 'nc') return b.id; const m = fights.find(isRes); return m ? m.id : null; };
+function fightPts(f, k, x2) { if (!k || !isRes(f) || k.w !== f.w) return 0; let p = 3; if (f.dog && f.dog === f.w) p += 2; if (k.m && k.m === f.m) { p += 2; if (f.r && k.r && (f.m === 'ko' || f.m === 'sub') && +k.r === +f.r) p += 2; } return (x2 === undefined ? k.x2 : x2) ? p * 2 : p; }
 
 $('btnLogin').onclick = async () => { say('Entrando…'); try { await auth.signInWithEmailAndPassword($('email').value.trim(), $('pass').value); say(''); } catch (e) { say('Não entrou: confira e-mail e senha. (' + e.code + ')'); } };
 $('btnOut').onclick = () => auth.signOut();
@@ -194,7 +197,7 @@ function eventCard(id, ev) {
       <select data-i="${i}" data-k="cat"><option value="">Categoria…</option>${CATS.map(c => `<option>${c}</option>`).join('')}</select>
       <select data-i="${i}" data-k="rounds"><option value="3">3 rounds</option><option value="5">5 rounds</option></select>
       <select data-i="${i}" data-k="dog"><option value="">Zebra: nenhuma</option><option value="a">Zebra: ${esc(f.a)}</option><option value="b">Zebra: ${esc(f.b)}</option></select>
-      <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option></select>
+      <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option><option value="nc">🚫 Cancelada / sem resultado</option></select>
       <select data-i="${i}" data-k="m"><option value="">Como…</option>${Object.entries(MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
       <select data-i="${i}" data-k="r"><option value="">Round…</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">R${r}</option>`).join('')}</select></div>`).join('')}</div>
     <div class="unsaved" data-unsaved hidden>● Mudanças não salvas — clique em Salvar.</div>
@@ -236,7 +239,7 @@ function eventCard(id, ev) {
     dirty();
   };
   el.querySelector('[data-act="save"]').onclick = async () => {
-    const fights = (ev.fights || []).map((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: f.a, b: f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && m) o.m = m; if (w && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
+    const fights = (ev.fights || []).map((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: f.a, b: f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && w !== 'nc' && m) o.m = m; if (w && w !== 'nc' && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
     const data = { fights, status: el.querySelector('[data-k="status"]').value, mc: Math.max(1, Math.min(15, +el.querySelector('[data-k="mc"]').value || 5)), season: ev.season || new Date(ev.date || Date.now()).toISOString().slice(0, 7), poster: firebase.firestore.FieldValue.delete(), locks: locksOf(ev.date, fights), ...lockLists(locksOf(ev.date, fights)) };
     out.textContent = 'Salvando…'; let kb = 0;
     try { const r = await saveImgs(id, img, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB). Se lançou resultado, clique em "Calcular ranking".`; }
@@ -246,15 +249,24 @@ function eventCard(id, ev) {
     out.textContent = 'Calculando…';
     try {
       const ref = db.collection('bolao').doc(id); const fresh = (await ref.get()).data(); const picks = await ref.collection('picks').get();
+      // nome e país que cada jogador escolheu no perfil do Bolão valem mais que o gravado no palpite
+      const profs = {}; try { (await db.collection('bolao_user').get()).forEach(d => { profs[d.id] = d.data(); }); } catch (e) { }
+      const nameOf = (uid, fb) => String((profs[uid] && profs[uid].name) || fb || 'Jogador').slice(0, 30);
+      const nRes = (fresh.fights || []).filter(isRes).length;
       const rows = []; const cnt = {}; let batch = db.batch(), n = 0;
       for (const d of picks.docs) {
-        const p = d.data(); let pts = 0;
-        for (const f of fresh.fights || []) { const k = p.picks && p.picks[f.id]; if (k && k.w) { cnt[f.id] = cnt[f.id] || { a: 0, b: 0 }; if (k.w === 'a' || k.w === 'b') cnt[f.id][k.w]++; } pts += fightPts(f, k); }
-        rows.push({ uid: d.id, name: String(p.name || 'Jogador').slice(0, 30), pts, cc: /^[A-Z]{2}$/.test(p.cc || '') ? p.cc : 'BR' });
+        const p = d.data(); let pts = 0; const bid = boostId(fresh.fights || [], p.picks);
+        for (const f of fresh.fights || []) { const k = p.picks && p.picks[f.id]; if (k && k.w) { cnt[f.id] = cnt[f.id] || { a: 0, b: 0 }; if (k.w === 'a' || k.w === 'b') cnt[f.id][k.w]++; } pts += fightPts(f, k, f.id === bid); }
+        const cc = (profs[d.id] && profs[d.id].cc) || p.cc || '';
+        const hits = (fresh.fights || []).filter(f => isRes(f) && p.picks && p.picks[f.id] && p.picks[f.id].w === f.w).length;
+        rows.push({ uid: d.id, name: nameOf(d.id, p.name), pts, hits, cc: /^[A-Z]{2}$/.test(cc) ? cc : 'BR' });
         batch.set(d.ref, { pts }, { merge: true }); if (++n % 400 === 0) { await batch.commit(); batch = db.batch(); }
       }
       await batch.commit();
       rows.sort((a, b) => b.pts - a.pts);
+      rows.forEach((r, i) => { r.pos = i && r.pts === rows[i - 1].pts ? rows[i - 1].pos : i + 1; }); // empate divide a posição
+      // histórico de cada jogador (perfil no jogo): só quando já tem resultado
+      if (nRes) { let b2 = db.batch(), k = 0; for (const r of rows) { b2.set(db.collection('bolao_stat').doc(r.uid), { hist: { [id]: { n: fresh.name, d: fresh.date || 0, p: r.pts, pos: r.pos, of: rows.length, h: r.hits, f: nRes } }, at: Date.now() }, { merge: true }); if (++k % 400 === 0) { await b2.commit(); b2 = db.batch(); } } await b2.commit(); }
       const pct = {}; for (const [k, c] of Object.entries(cnt)) { const t = c.a + c.b || 1; pct[k] = { a: Math.round(100 * c.a / t), b: Math.round(100 * c.b / t) }; }
       await ref.collection('rank').doc('top').set({ list: rows.slice(0, 100), total: rows.length, at: Date.now() });
       await ref.collection('rank').doc('all').set({ list: rows.slice(0, 5000), at: Date.now() });
@@ -262,16 +274,17 @@ function eventCard(id, ev) {
       // ranking do mês: soma de todos os eventos da mesma temporada
       const season = fresh.season || new Date(fresh.date || Date.now()).toISOString().slice(0, 7);
       const evs = await db.collection('bolao').where('season', '==', season).get(); const sum = {};
-      for (const e of evs.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = sum[r.uid] = sum[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = r.name; x.cc = r.cc || x.cc || 'BR'; } }
+      for (const e of evs.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = sum[r.uid] = sum[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = nameOf(r.uid, r.name); x.cc = (profs[r.uid] && profs[r.uid].cc) || r.cc || x.cc || 'BR'; } }
       const list = Object.values(sum).sort((a, b) => b.pts - a.pts);
       const [Y, M] = season.split('-'); const label = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][+M - 1] + ' de ' + Y;
       await db.collection('bolao_season').doc(season).set({ label, list: list.slice(0, 100), total: list.length, byCc: byCountry(list), at: Date.now() });
       await db.collection('bolao_season').doc(season + '_all').set({ label, list: list.slice(0, 5000), at: Date.now() }); // ligas usam a lista inteira
       // ranking geral: soma de todos os eventos de sempre
       const every = await db.collection('bolao').get(); const tot = {};
-      for (const e of every.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = tot[r.uid] = tot[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = r.name; x.cc = r.cc || x.cc || 'BR'; } }
+      for (const e of every.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = tot[r.uid] = tot[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = nameOf(r.uid, r.name); x.cc = (profs[r.uid] && profs[r.uid].cc) || r.cc || x.cc || 'BR'; } }
       const gl = Object.values(tot).sort((a, b) => b.pts - a.pts);
       await db.collection('bolao_season').doc('all').set({ label: 'Geral', list: gl.slice(0, 100), total: gl.length, byCc: byCountry(gl), at: Date.now() });
+      await db.collection('bolao_season').doc('all_all').set({ label: 'Geral', list: gl.slice(0, 5000), at: Date.now() }); // ligas: ranking desde o começo
       out.innerHTML = `✅ ${rows.length} palpites calculados, % da galera e ranking de ${esc(label)} atualizados. Top 3 do evento: ${rows.slice(0, 3).map((r, i) => `${i + 1}º ${esc(r.name)} (${r.pts})`).join(' · ') || '—'}`;
     } catch (e) { out.textContent = 'Erro: ' + e.message; }
   };
