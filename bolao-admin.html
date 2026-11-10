@@ -125,6 +125,8 @@ function locksOf(date, fights) {
   for (const f of fights) { if (!f.t) continue; const [hh, mm] = f.t.split(':').map(Number); if (isNaN(hh)) continue; let ms = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), hh + 3, mm || 0); if (hh < 12 && late) ms += 864e5; o[f.id] = ms; }
   return o;
 }
+// mesma coisa em fila (ordem de início), que é o formato que as regras do banco conseguem conferir rápido
+function lockLists(locks) { const e = Object.entries(locks).sort((a, b) => a[1] - b[1]); return { lockSeq: e.map(x => x[0]), lockAt: e.map(x => x[1]) }; }
 // fotos ficam em bolao/{evento}/img/all, fora do documento do evento: o jogo só baixa quando precisa
 const imgRef = id => db.collection('bolao').doc(id).collection('img').doc('all');
 async function saveImgs(id, img, fights) {
@@ -144,7 +146,7 @@ $('btnCreate').onclick = async () => {
   if (!name || !date || !lock) return say('Preencha nome, data e quando os palpites fecham.');
   if (!fights.length || fights.includes(null)) return say('Confira as lutas: uma por linha, no formato "Lutador A x Lutador B".');
   fights.forEach((f, i) => { f.main = i < 2; f.rounds = i === 0 ? 5 : 3; });
-  try { await db.collection('bolao').add({ name, date: brt(date + 'T12:00'), lock, status: 'open', season: date.slice(0, 7), boost: 1, fights, locks: locksOf(brt(date + 'T12:00'), fights) }); say('✅ Evento criado. As 2 primeiras lutas ficaram como principais (com round); ajuste abaixo se quiser.'); $('evName').value = ''; $('evFights').value = ''; loadEvents(); }
+  try { await db.collection('bolao').add({ name, date: brt(date + 'T12:00'), lock, status: 'open', season: date.slice(0, 7), boost: 1, fights, locks: locksOf(brt(date + 'T12:00'), fights), ...lockLists(locksOf(brt(date + 'T12:00'), fights)) }); say('✅ Evento criado. As 2 primeiras lutas ficaram como principais (com round); ajuste abaixo se quiser.'); $('evName').value = ''; $('evFights').value = ''; loadEvents(); }
   catch (e) { say('Não salvou: ' + e.message); }
 };
 
@@ -155,9 +157,9 @@ async function loadEvents() {
     if (s.empty) { box.innerHTML = '<p class="muted">Nenhum evento ainda.</p>'; return; }
     box.innerHTML = '';
     // eventos antigos guardavam as fotos dentro do próprio documento (pesado pro celular de quem joga): separa com 1 clique
-    const old = s.docs.filter(d => { const e = d.data(); return e.poster || (e.fights || []).some(f => f.imgA || f.imgB) || (e.fights || []).some(f => f.t) && !e.locks; });
+    const old = s.docs.filter(d => { const e = d.data(); return e.poster || (e.fights || []).some(f => f.imgA || f.imgB) || (e.fights || []).some(f => f.t) && !e.lockSeq; });
     if (old.length) {
-      const b = document.createElement('div'); b.className = 'card'; b.innerHTML = `<b>⚡ ${old.length} evento(s) no formato antigo</b><p class="muted">As fotos estão dentro do evento e cada jogador baixa tudo toda vez que abre o Bolão. Clique pra separar (nada some).</p><button data-mig>Separar fotos agora</button> <span class="muted" data-mo></span>`;
+      const b = document.createElement('div'); b.className = 'card'; b.innerHTML = `<b>⚡ ${old.length} evento(s) no formato antigo</b><p class="muted">As fotos estão dentro do evento e cada jogador baixa tudo toda vez que abre o Bolão. Clique pra atualizar (nada some).</p><button data-mig>Atualizar agora</button> <span class="muted" data-mo></span>`;
       b.querySelector('[data-mig]').onclick = async () => {
         const mo = b.querySelector('[data-mo]');
         try {
@@ -165,8 +167,10 @@ async function loadEvents() {
             mo.textContent = 'Separando ' + (d.data().name || d.id) + '…'; const e = d.data();
             const img = { poster: e.poster || '', fights: (e.fights || []).map(f => ({ imgA: f.imgA || '', imgB: f.imgB || '' })) };
             const fights = (e.fights || []).map(f => { const o = Object.assign({}, f); delete o.imgA; delete o.imgB; return o; });
-            const r = await saveImgs(d.id, img, fights);
-            await d.ref.set({ fights, poster: firebase.firestore.FieldValue.delete(), imgAt: r.at, locks: locksOf(e.date, fights) }, { merge: true });
+            const inline = !!(e.poster || (e.fights || []).some(f => f.imgA || f.imgB));
+            const upd = { fights, locks: locksOf(e.date, fights), ...lockLists(locksOf(e.date, fights)) };
+            if (inline) { const r = await saveImgs(d.id, img, fights); upd.imgAt = r.at; upd.poster = firebase.firestore.FieldValue.delete(); } // fotos já separadas ficam como estão
+            await d.ref.set(upd, { merge: true });
           }
           mo.textContent = '✅ Pronto.'; loadEvents();
         } catch (err) { mo.textContent = 'Erro: ' + err.message; }
@@ -233,7 +237,7 @@ function eventCard(id, ev) {
   };
   el.querySelector('[data-act="save"]').onclick = async () => {
     const fights = (ev.fights || []).map((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: f.a, b: f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && m) o.m = m; if (w && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
-    const data = { fights, status: el.querySelector('[data-k="status"]').value, mc: Math.max(1, Math.min(15, +el.querySelector('[data-k="mc"]').value || 5)), season: ev.season || new Date(ev.date || Date.now()).toISOString().slice(0, 7), poster: firebase.firestore.FieldValue.delete(), locks: locksOf(ev.date, fights) };
+    const data = { fights, status: el.querySelector('[data-k="status"]').value, mc: Math.max(1, Math.min(15, +el.querySelector('[data-k="mc"]').value || 5)), season: ev.season || new Date(ev.date || Date.now()).toISOString().slice(0, 7), poster: firebase.firestore.FieldValue.delete(), locks: locksOf(ev.date, fights), ...lockLists(locksOf(ev.date, fights)) };
     out.textContent = 'Salvando…'; let kb = 0;
     try { const r = await saveImgs(id, img, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB). Se lançou resultado, clique em "Calcular ranking".`; }
     catch (e) { out.textContent = 'Erro: ' + e.message; }
