@@ -67,7 +67,7 @@
       <label>Nome do evento</label><input id="evName" placeholder="UFC 330: Poatan x Ankalaev">
       <div class="row">
         <div class="grow"><label>Data do evento</label><input id="evDate" type="date"></div>
-        <div class="grow"><label>Palpites fecham em (horário de Brasília)</label><input id="evLock" type="datetime-local"></div>
+        <div class="grow"><label>Palpites fecham em (horário de Brasília) — use o horário da luta principal; as lutas com horário fecham sozinhas na hora delas</label><input id="evLock" type="datetime-local"></div>
       </div>
       <label>Lutas (uma por linha, no formato <b>Lutador A x Lutador B</b>, e se quiser o horário no fim: <b>- 23:30</b>). Comece pela luta principal: as 2 primeiras ficam como principais (vale palpite de round).</label>
       <textarea id="evFights" placeholder="Alex Pereira x Magomed Ankalaev - 01:00&#10;Charles Oliveira x Arman Tsarukyan - 00:30"></textarea>
@@ -105,7 +105,9 @@ const say = m => { $('msg').textContent = m || ''; };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const MET = { ko: 'Nocaute', sub: 'Finalização', dec: 'Decisão' };
 // mesma conta do jogo (online.js): vencedor 3 · zebra +2 · método +2 · round +2 (principal, nocaute/finalização) · golpe de ouro x2
-function fightPts(f, k) { if (!k || !f.w || k.w !== f.w) return 0; let p = 3; if (f.dog && f.dog === f.w) p += 2; if (k.m && k.m === f.m) { p += 2; if (f.main && f.r && k.r && (f.m === 'ko' || f.m === 'sub') && +k.r === +f.r) p += 2; } return k.x2 ? p * 2 : p; }
+// ranking nacional: top 50 de cada país (a lista já vem ordenada)
+function byCountry(list) { const o = {}; for (const r of list) { const c = r.cc || 'BR'; const x = o[c] = o[c] || { list: [], total: 0 }; x.total++; if (x.list.length < 50) x.list.push({ uid: r.uid, name: r.name, pts: r.pts }); } return o; }
+function fightPts(f, k) { if (!k || !f.w || k.w !== f.w) return 0; let p = 3; if (f.dog && f.dog === f.w) p += 2; if (k.m && k.m === f.m) { p += 2; if (f.r && k.r && (f.m === 'ko' || f.m === 'sub') && +k.r === +f.r) p += 2; } return k.x2 ? p * 2 : p; }
 
 $('btnLogin').onclick = async () => { say('Entrando…'); try { await auth.signInWithEmailAndPassword($('email').value.trim(), $('pass').value); say(''); } catch (e) { say('Não entrou: confira e-mail e senha. (' + e.code + ')'); } };
 $('btnOut').onclick = () => auth.signOut();
@@ -116,6 +118,24 @@ auth.onAuthStateChanged(u => {
 
 // horário de Brasília (UTC-3) → milissegundos
 const brt = v => { if (!v) return 0; const [d, h] = v.split('T'); const [Y, M, D] = d.split('-').map(Number); const [hh, mm] = (h || '00:00').split(':').map(Number); return Date.UTC(Y, M - 1, D, hh + 3, mm); };
+// hora em que cada luta começa (Brasília) → as regras do banco usam isso pra fechar o palpite de cada luta.
+// madrugada só vira o dia seguinte se o card também tem luta à tarde/noite (igual ao jogo)
+function locksOf(date, fights) {
+  const d = new Date(date), late = fights.some(f => parseInt(f.t || '') >= 12), o = {};
+  for (const f of fights) { if (!f.t) continue; const [hh, mm] = f.t.split(':').map(Number); if (isNaN(hh)) continue; let ms = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), hh + 3, mm || 0); if (hh < 12 && late) ms += 864e5; o[f.id] = ms; }
+  return o;
+}
+// fotos ficam em bolao/{evento}/img/all, fora do documento do evento: o jogo só baixa quando precisa
+const imgRef = id => db.collection('bolao').doc(id).collection('img').doc('all');
+async function saveImgs(id, img, fights) {
+  const f = {}; fights.forEach((x, i) => { const s = img.fights[i] || {}; if (s.imgA || s.imgB) f[x.id] = { a: s.imgA || '', b: s.imgB || '' }; });
+  const doc = { poster: img.poster || '', f }; const kb = Math.round(JSON.stringify(doc).length / 1024);
+  if (!doc.poster && !Object.keys(f).length) { await imgRef(id).delete(); return { kb: 0, at: firebase.firestore.FieldValue.delete() }; }
+  if (kb > 950) throw new Error(`as fotos somam ${kb} KB (o limite é ~1000 KB). Tire a arte do evento ou algumas fotos.`);
+  await imgRef(id).set(doc); return { kb, at: Date.now() };
+}
+// categorias de peso (vão na imagem dos stories; o jogo traduz)
+const CATS = ['Peso-palha', 'Peso-mosca', 'Peso-galo', 'Peso-pena', 'Peso-leve', 'Peso-meio-médio', 'Peso-médio', 'Peso-meio-pesado', 'Peso-pesado', 'Peso-palha feminino', 'Peso-mosca feminino', 'Peso-galo feminino', 'Peso-pena feminino', 'Peso-casado'];
 const fmtBrt = ms => { if (!ms) return '—'; const d = new Date(ms - 3 * 3600e3); return d.toISOString().slice(0, 16).replace('T', ' ') + ' (Brasília)'; };
 
 $('btnCreate').onclick = async () => {
@@ -124,7 +144,7 @@ $('btnCreate').onclick = async () => {
   if (!name || !date || !lock) return say('Preencha nome, data e quando os palpites fecham.');
   if (!fights.length || fights.includes(null)) return say('Confira as lutas: uma por linha, no formato "Lutador A x Lutador B".');
   fights.forEach((f, i) => { f.main = i < 2; f.rounds = i === 0 ? 5 : 3; });
-  try { await db.collection('bolao').add({ name, date: brt(date + 'T12:00'), lock, status: 'open', season: date.slice(0, 7), boost: 1, fights }); say('✅ Evento criado. As 2 primeiras lutas ficaram como principais (com round); ajuste abaixo se quiser.'); $('evName').value = ''; $('evFights').value = ''; loadEvents(); }
+  try { await db.collection('bolao').add({ name, date: brt(date + 'T12:00'), lock, status: 'open', season: date.slice(0, 7), boost: 1, fights, locks: locksOf(brt(date + 'T12:00'), fights) }); say('✅ Evento criado. As 2 primeiras lutas ficaram como principais (com round); ajuste abaixo se quiser.'); $('evName').value = ''; $('evFights').value = ''; loadEvents(); }
   catch (e) { say('Não salvou: ' + e.message); }
 };
 
@@ -134,6 +154,25 @@ async function loadEvents() {
     const s = await db.collection('bolao').orderBy('date', 'desc').limit(10).get();
     if (s.empty) { box.innerHTML = '<p class="muted">Nenhum evento ainda.</p>'; return; }
     box.innerHTML = '';
+    // eventos antigos guardavam as fotos dentro do próprio documento (pesado pro celular de quem joga): separa com 1 clique
+    const old = s.docs.filter(d => { const e = d.data(); return e.poster || (e.fights || []).some(f => f.imgA || f.imgB) || (e.fights || []).some(f => f.t) && !e.locks; });
+    if (old.length) {
+      const b = document.createElement('div'); b.className = 'card'; b.innerHTML = `<b>⚡ ${old.length} evento(s) no formato antigo</b><p class="muted">As fotos estão dentro do evento e cada jogador baixa tudo toda vez que abre o Bolão. Clique pra separar (nada some).</p><button data-mig>Separar fotos agora</button> <span class="muted" data-mo></span>`;
+      b.querySelector('[data-mig]').onclick = async () => {
+        const mo = b.querySelector('[data-mo]');
+        try {
+          for (const d of old) {
+            mo.textContent = 'Separando ' + (d.data().name || d.id) + '…'; const e = d.data();
+            const img = { poster: e.poster || '', fights: (e.fights || []).map(f => ({ imgA: f.imgA || '', imgB: f.imgB || '' })) };
+            const fights = (e.fights || []).map(f => { const o = Object.assign({}, f); delete o.imgA; delete o.imgB; return o; });
+            const r = await saveImgs(d.id, img, fights);
+            await d.ref.set({ fights, poster: firebase.firestore.FieldValue.delete(), imgAt: r.at, locks: locksOf(e.date, fights) }, { merge: true });
+          }
+          mo.textContent = '✅ Pronto.'; loadEvents();
+        } catch (err) { mo.textContent = 'Erro: ' + err.message; }
+      };
+      box.appendChild(b);
+    }
     s.forEach(doc => box.appendChild(eventCard(doc.id, doc.data())));
   } catch (e) { box.innerHTML = '<p class="muted">Erro ao carregar: ' + esc(e.message) + '</p>'; }
 }
@@ -142,11 +181,13 @@ function eventCard(id, ev) {
   el.innerHTML = `<div class="row"><b class="grow">${esc(ev.name)}</b>
       <select data-k="status" style="width:auto"><option value="open">Aberto</option><option value="closed">Fechado</option><option value="done">Encerrado</option></select></div>
     <p class="muted">Palpites fecham: ${esc(fmtBrt(ev.lock))}</p>
+    <div class="row"><span class="muted">📸 Card principal (vai na imagem dos stories): as primeiras</span><input type="number" data-k="mc" min="1" max="15" value="${ev.mc || 5}" style="width:70px!important"><span class="muted">lutas</span></div>
     <img class="poster" data-poster alt="" hidden>
     <div class="row"><button class="ghost" data-act="poster">🖼️ Arte do evento</button><button class="ghost" data-act="noposter" hidden>Tirar arte</button></div>
     <div class="row" style="margin-top:8px"><span class="muted">⏰ Horários em sequência: 1ª luta do card (a de baixo) às</span><input type="time" class="time" data-seq-start value="20:00"><span class="muted">a cada</span><input type="number" class="time" data-seq-gap value="30" min="5" step="5" style="width:70px!important"><span class="muted">min (lutas de 5 rounds: 40 min)</span><button class="ghost" data-act="seq">Preencher</button></div>
     <div>${(ev.fights || []).map((f, i) => `<div class="fight"><div class="vs"><div class="face" data-face="a" data-i="${i}" title="Foto de ${esc(f.a)}">📷</div><b>${esc(f.a)} x ${esc(f.b)}</b><div class="face" data-face="b" data-i="${i}" title="Foto de ${esc(f.b)}">📷</div><input type="time" class="time" data-i="${i}" data-k="t" title="Horário (Brasília)"></div>
       <label style="margin:0;display:flex;gap:4px;align-items:center"><input type="checkbox" data-i="${i}" data-k="main" style="width:auto"> ⭐ Principal</label>
+      <select data-i="${i}" data-k="cat"><option value="">Categoria…</option>${CATS.map(c => `<option>${c}</option>`).join('')}</select>
       <select data-i="${i}" data-k="rounds"><option value="3">3 rounds</option><option value="5">5 rounds</option></select>
       <select data-i="${i}" data-k="dog"><option value="">Zebra: nenhuma</option><option value="a">Zebra: ${esc(f.a)}</option><option value="b">Zebra: ${esc(f.b)}</option></select>
       <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option></select>
@@ -156,11 +197,12 @@ function eventCard(id, ev) {
     <div class="row" style="margin-top:10px"><button data-act="save">Salvar</button><button class="ghost" data-act="rank">Calcular ranking</button><button class="red" data-act="del">Apagar</button></div>
     <div class="muted" data-out></div>`;
   el.querySelector('[data-k="status"]').value = ev.status || 'open';
-  (ev.fights || []).forEach((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); q('w').value = f.w || ''; q('m').value = f.m || ''; q('r').value = f.r || ''; q('dog').value = f.dog || ''; q('rounds').value = String(f.rounds || 3); q('main').checked = !!f.main; q('t').value = f.t || ''; });
+  (ev.fights || []).forEach((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); q('w').value = f.w || ''; q('m').value = f.m || ''; q('r').value = f.r || ''; q('dog').value = f.dog || ''; q('rounds').value = String(f.rounds || 3); q('cat').value = f.cat || ''; q('main').checked = !!f.main; q('t').value = f.t || ''; });
   const out = el.querySelector('[data-out]');
   // imagens ficam em memória até clicar em Salvar
   const img = { poster: ev.poster || '', fights: (ev.fights || []).map(f => ({ imgA: f.imgA || '', imgB: f.imgB || '' })) };
   const dirty = () => { el.querySelector('[data-unsaved]').hidden = false; };
+  if (ev.imgAt) imgRef(id).get().then(d => { const x = d.exists ? d.data() : null; if (!x) return; if (!img.poster) img.poster = x.poster || ''; (ev.fights || []).forEach((f, i) => { const g = x.f && x.f[f.id]; if (g) { if (!img.fights[i].imgA) img.fights[i].imgA = g.a || ''; if (!img.fights[i].imgB) img.fights[i].imgB = g.b || ''; } }); paint(); }).catch(() => { });
   el.addEventListener('change', e => { if (e.target.matches('select, input')) dirty(); });
   const paint = () => {
     const p = el.querySelector('[data-poster]'); p.hidden = !img.poster; if (img.poster) p.src = img.poster;
@@ -190,12 +232,10 @@ function eventCard(id, ev) {
     dirty();
   };
   el.querySelector('[data-act="save"]').onclick = async () => {
-    const fights = (ev.fights || []).map((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: f.a, b: f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && m) o.m = m; if (w && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; const s = img.fights[i]; for (const k of ['imgA', 'imgB']) if (s[k]) o[k] = s[k]; return o; });
-    const data = { fights, status: el.querySelector('[data-k="status"]').value, season: ev.season || new Date(ev.date || Date.now()).toISOString().slice(0, 7), poster: img.poster || firebase.firestore.FieldValue.delete() };
-    const kb = Math.round(JSON.stringify({ ...data, poster: img.poster }).length / 1024);
-    if (kb > 950) return out.textContent = `⚠️ Ficou grande demais (${kb} KB; o limite do banco é ~1000 KB). Tire a arte do evento ou algumas fotos.`;
-    out.textContent = 'Salvando…';
-    try { await db.collection('bolao').doc(id).set(data, { merge: true }); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (${kb} KB). Se lançou resultado, clique em "Calcular ranking".`; }
+    const fights = (ev.fights || []).map((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: f.a, b: f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && m) o.m = m; if (w && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
+    const data = { fights, status: el.querySelector('[data-k="status"]').value, mc: Math.max(1, Math.min(15, +el.querySelector('[data-k="mc"]').value || 5)), season: ev.season || new Date(ev.date || Date.now()).toISOString().slice(0, 7), poster: firebase.firestore.FieldValue.delete(), locks: locksOf(ev.date, fights) };
+    out.textContent = 'Salvando…'; let kb = 0;
+    try { const r = await saveImgs(id, img, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB). Se lançou resultado, clique em "Calcular ranking".`; }
     catch (e) { out.textContent = 'Erro: ' + e.message; }
   };
   el.querySelector('[data-act="rank"]').onclick = async () => {
@@ -206,7 +246,7 @@ function eventCard(id, ev) {
       for (const d of picks.docs) {
         const p = d.data(); let pts = 0;
         for (const f of fresh.fights || []) { const k = p.picks && p.picks[f.id]; if (k && k.w) { cnt[f.id] = cnt[f.id] || { a: 0, b: 0 }; if (k.w === 'a' || k.w === 'b') cnt[f.id][k.w]++; } pts += fightPts(f, k); }
-        rows.push({ uid: d.id, name: String(p.name || 'Jogador').slice(0, 30), pts });
+        rows.push({ uid: d.id, name: String(p.name || 'Jogador').slice(0, 30), pts, cc: /^[A-Z]{2}$/.test(p.cc || '') ? p.cc : 'BR' });
         batch.set(d.ref, { pts }, { merge: true }); if (++n % 400 === 0) { await batch.commit(); batch = db.batch(); }
       }
       await batch.commit();
@@ -218,22 +258,22 @@ function eventCard(id, ev) {
       // ranking do mês: soma de todos os eventos da mesma temporada
       const season = fresh.season || new Date(fresh.date || Date.now()).toISOString().slice(0, 7);
       const evs = await db.collection('bolao').where('season', '==', season).get(); const sum = {};
-      for (const e of evs.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = sum[r.uid] = sum[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = r.name; } }
+      for (const e of evs.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = sum[r.uid] = sum[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = r.name; x.cc = r.cc || x.cc || 'BR'; } }
       const list = Object.values(sum).sort((a, b) => b.pts - a.pts);
       const [Y, M] = season.split('-'); const label = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'][+M - 1] + ' de ' + Y;
-      await db.collection('bolao_season').doc(season).set({ label, list: list.slice(0, 100), total: list.length, at: Date.now() });
+      await db.collection('bolao_season').doc(season).set({ label, list: list.slice(0, 100), total: list.length, byCc: byCountry(list), at: Date.now() });
       await db.collection('bolao_season').doc(season + '_all').set({ label, list: list.slice(0, 5000), at: Date.now() }); // ligas usam a lista inteira
       // ranking geral: soma de todos os eventos de sempre
       const every = await db.collection('bolao').get(); const tot = {};
-      for (const e of every.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = tot[r.uid] = tot[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = r.name; } }
+      for (const e of every.docs) { const all = await e.ref.collection('rank').doc('all').get(); for (const r of (all.exists ? all.data().list : [])) { const x = tot[r.uid] = tot[r.uid] || { uid: r.uid, name: r.name, pts: 0, ev: 0 }; x.pts += r.pts; x.ev++; x.name = r.name; x.cc = r.cc || x.cc || 'BR'; } }
       const gl = Object.values(tot).sort((a, b) => b.pts - a.pts);
-      await db.collection('bolao_season').doc('all').set({ label: 'Geral', list: gl.slice(0, 100), total: gl.length, at: Date.now() });
+      await db.collection('bolao_season').doc('all').set({ label: 'Geral', list: gl.slice(0, 100), total: gl.length, byCc: byCountry(gl), at: Date.now() });
       out.innerHTML = `✅ ${rows.length} palpites calculados, % da galera e ranking de ${esc(label)} atualizados. Top 3 do evento: ${rows.slice(0, 3).map((r, i) => `${i + 1}º ${esc(r.name)} (${r.pts})`).join(' · ') || '—'}`;
     } catch (e) { out.textContent = 'Erro: ' + e.message; }
   };
   el.querySelector('[data-act="del"]').onclick = async () => {
     if (!confirm('Apagar o evento "' + ev.name + '"? Os palpites dele somem do jogo.')) return;
-    try { await db.collection('bolao').doc(id).delete(); loadEvents(); } catch (e) { out.textContent = 'Erro: ' + e.message; }
+    try { await imgRef(id).delete(); await db.collection('bolao').doc(id).delete(); loadEvents(); } catch (e) { out.textContent = 'Erro: ' + e.message; }
   };
   return el;
 }
