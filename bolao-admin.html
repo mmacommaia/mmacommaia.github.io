@@ -80,6 +80,32 @@
     <h2>📋 Eventos</h2>
     <div id="events"><p class="muted">Carregando…</p></div>
 
+    <h2>⚙️ Ajustes ao vivo (motor de regras)</h2>
+    <div class="card" id="cfgBox">
+      <p class="muted">Muda o jogo de todo mundo sem lançar versão nova. Cada celular busca isto no máximo a cada 12 horas. O jogo tem travas: número fora do limite é cortado.</p>
+      <div class="row">
+        <div class="grow"><label>Anúncios com prêmio</label><select id="cfAdsOn"><option value="1">Ligados</option><option value="0">Pausados pra todo mundo</option></select></div>
+        <div class="grow"><label>Máx. por dia (0–6)</label><input id="cfPerDay" type="number" min="0" max="6"></div>
+        <div class="grow"><label>Intervalo mín. (min, 3–120)</label><input id="cfGap" type="number" min="3" max="120"></div>
+      </div>
+      <div class="row">
+        <div class="grow"><label>A partir da luta nº (2–30)</label><input id="cfMinF" type="number" min="2" max="30"></div>
+        <div class="grow"><label>Hora dos lembretes (9–21)</label><input id="cfHour" type="number" min="9" max="21"></div>
+        <div class="grow"><label>Chance do BOOM (Danny Black, 0,03–0,30)</label><input id="cfBoom" type="number" min="0.03" max="0.3" step="0.01"></div>
+      </div>
+      <label>📣 Aviso na tela inicial da carreira (deixe em branco pra não mostrar)</label>
+      <input id="cfAvPt" placeholder="Português: Card do UFC 330 aberto! Faça seus palpites no Bolão.">
+      <input id="cfAvEn" placeholder="English" style="margin-top:6px">
+      <input id="cfAvEs" placeholder="Español" style="margin-top:6px">
+      <div class="row">
+        <div class="grow"><label>Mostrar a partir de</label><input id="cfAvStart" type="datetime-local"></div>
+        <div class="grow"><label>Até</label><input id="cfAvEnd" type="datetime-local"></div>
+      </div>
+      <details style="margin-top:8px"><summary class="muted">Avançado: JSON completo</summary><textarea id="cfJson" spellcheck="false" style="font-family:monospace;font-size:12px;min-height:200px"></textarea>
+        <p class="muted">Formato: { "version", "defaults": {...}, "rules": [ { "id", "priority", "start", "end", "when": {"signal":"platform","op":"eq","value":"android"}, "set": {"ads.perDay": 2} } ] }. Sinais: platform, lang, app_version, weekday, local_hour.</p></details>
+      <div class="row" style="margin-top:10px"><button id="btnCfg">Salvar ajustes</button><span class="muted grow" id="cfgMsg"></span></div>
+    </div>
+
     <h2>🚩 Denúncias da Arena</h2>
     <div id="reports"><p class="muted">Carregando…</p></div>
   </section>
@@ -166,7 +192,7 @@ $('btnLogin').onclick = async () => { say('Entrando…'); try { await auth.signI
 $('btnOut').onclick = () => auth.signOut();
 auth.onAuthStateChanged(u => {
   const ok = u && !u.isAnonymous; $('login').hidden = !!ok; $('app').hidden = !ok;
-  if (ok) { $('who').textContent = 'Logado como ' + u.email; loadEvents(); loadReports(); }
+  if (ok) { $('who').textContent = 'Logado como ' + u.email; loadEvents(); loadReports(); loadCfg(); }
 });
 
 // horário de Brasília (UTC-3) → milissegundos
@@ -415,6 +441,37 @@ async function editFighter(name, hasFace) {
     $('cropOk').onclick = () => done(canvasUrl($('cropFace'), 'image/webp', 0.85));
   });
 }
+
+// ---------- motor de regras: config/rules (o jogo lê sem login; só o admin grava) ----------
+const CFG_DEF = { ads: { enabled: true, minFights: 3, perDay: 4, gapMin: 6, decideSec: 8 }, lembretes: { hour: 19 }, boom: { chance: 0.14, cooldown: 26 }, aviso: null };
+const toLocal = iso => { if (!iso) return ''; const d = new Date(iso); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16); };
+let CFG_DOC = null;
+async function loadCfg() {
+  try { const d = await db.collection('config').doc('rules').get(); CFG_DOC = d.exists && d.data().json ? JSON.parse(d.data().json) : { version: '', defaults: {}, rules: [] }; }
+  catch (e) { $('cfgMsg').textContent = 'Erro ao carregar: ' + e.message; CFG_DOC = { version: '', defaults: {}, rules: [] }; }
+  const D = JSON.parse(JSON.stringify(CFG_DEF)); const dd = CFG_DOC.defaults || {};
+  for (const k of Object.keys(D)) if (dd[k] !== undefined) D[k] = dd[k] && typeof dd[k] === 'object' && D[k] ? Object.assign({}, D[k], dd[k]) : dd[k];
+  $('cfAdsOn').value = D.ads.enabled === false ? '0' : '1'; $('cfPerDay').value = D.ads.perDay; $('cfGap').value = D.ads.gapMin; $('cfMinF').value = D.ads.minFights;
+  $('cfHour').value = D.lembretes.hour; $('cfBoom').value = D.boom.chance;
+  const av = D.aviso || {}; $('cfAvPt').value = av.pt || ''; $('cfAvEn').value = av.en || ''; $('cfAvEs').value = av.es || ''; $('cfAvStart').value = toLocal(av.start); $('cfAvEnd').value = toLocal(av.end);
+  $('cfJson').value = JSON.stringify(CFG_DOC, null, 1);
+}
+$('btnCfg').onclick = async () => {
+  let doc; try { doc = JSON.parse($('cfJson').value || '{}'); } catch (e) { $('cfgMsg').textContent = 'JSON avançado inválido: ' + e.message; return; }
+  doc.defaults = doc.defaults || {}; const num = (id, d) => { const v = parseFloat($(id).value); return isFinite(v) ? v : d; };
+  doc.defaults.ads = Object.assign({}, doc.defaults.ads, { enabled: $('cfAdsOn').value === '1', perDay: num('cfPerDay', 4), gapMin: num('cfGap', 6), minFights: num('cfMinF', 3) });
+  doc.defaults.lembretes = Object.assign({}, doc.defaults.lembretes, { hour: num('cfHour', 19) });
+  doc.defaults.boom = Object.assign({}, doc.defaults.boom, { chance: num('cfBoom', 0.14) });
+  const pt = $('cfAvPt').value.trim();
+  const iso = v => v ? new Date(v).toISOString() : undefined;
+  if (pt) { const old = (CFG_DOC && CFG_DOC.defaults && CFG_DOC.defaults.aviso) || {}; const same = old.pt === pt && old.en === $('cfAvEn').value.trim() && old.es === $('cfAvEs').value.trim();
+    doc.defaults.aviso = { id: same && old.id ? old.id : 'a' + Date.now().toString(36), pt: pt.slice(0, 220), en: $('cfAvEn').value.trim().slice(0, 220) || undefined, es: $('cfAvEs').value.trim().slice(0, 220) || undefined, start: iso($('cfAvStart').value), end: iso($('cfAvEnd').value) }; }
+  else doc.defaults.aviso = null;
+  const d = new Date(); doc.version = d.toISOString().slice(0, 10) + '.' + d.getHours() + d.getMinutes();
+  const json = JSON.stringify(doc); if (json.length > 60000) { $('cfgMsg').textContent = 'Grande demais (máx. 60 mil caracteres).'; return; }
+  try { await db.collection('config').doc('rules').set({ json, at: Date.now() }); CFG_DOC = doc; $('cfJson').value = JSON.stringify(doc, null, 1); $('cfgMsg').textContent = '✅ Salvo (versão ' + doc.version + '). Os celulares pegam em até 12 h.'; }
+  catch (e) { $('cfgMsg').textContent = 'Erro ao salvar: ' + e.message + ' (publicou as regras novas do Firestore com o bloco config?)'; }
+};
 
 async function loadReports() {
   const box = $('reports');
