@@ -100,6 +100,10 @@
         <div class="grow"><label>Hora dos lembretes (9–21)</label><input id="cfHour" type="number" min="9" max="21"></div>
         <div class="grow"><label>Chance do BOOM (Danny Black, 0,03–0,30)</label><input id="cfBoom" type="number" min="0.03" max="0.3" step="0.01"></div>
       </div>
+      <div class="row">
+        <div class="grow" style="flex:2"><label>📺 ID do bloco Intersticial do AdMob (vazio = sem intersticial)</label><input id="cfInterId" placeholder="ca-app-pub-5869603792732675/0000000000" spellcheck="false"></div>
+        <div class="grow"><label>Intersticial a cada (min de jogo, 10–120)</label><input id="cfInterMin" type="number" min="10" max="120"></div>
+      </div>
       <label>📣 Aviso na tela inicial da carreira (deixe em branco pra não mostrar)</label>
       <input id="cfAvPt" placeholder="Português: Card do UFC 330 aberto! Faça seus palpites no Bolão.">
       <input id="cfAvEn" placeholder="English" style="margin-top:6px">
@@ -529,7 +533,7 @@ async function editFighter(name, hasFace) {
 }
 
 // ---------- motor de regras: config/rules (o jogo lê sem login; só o admin grava) ----------
-const CFG_DEF = { ads: { enabled: true, minFights: 3, perDay: 4, gapMin: 6, decideSec: 8 }, lembretes: { hour: 19 }, boom: { chance: 0.14, cooldown: 26 }, aviso: null };
+const CFG_DEF = { ads: { enabled: true, minFights: 3, perDay: 4, gapMin: 6, decideSec: 8, interMin: 15, interId: '' }, lembretes: { hour: 19 }, boom: { chance: 0.14, cooldown: 26 }, aviso: null };
 const toLocal = iso => { if (!iso) return ''; const d = new Date(iso); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16); };
 let CFG_DOC = null;
 async function loadCfg() {
@@ -537,7 +541,7 @@ async function loadCfg() {
   catch (e) { $('cfgMsg').textContent = 'Erro ao carregar: ' + e.message; CFG_DOC = { version: '', defaults: {}, rules: [] }; }
   const D = JSON.parse(JSON.stringify(CFG_DEF)); const dd = CFG_DOC.defaults || {};
   for (const k of Object.keys(D)) if (dd[k] !== undefined) D[k] = dd[k] && typeof dd[k] === 'object' && D[k] ? Object.assign({}, D[k], dd[k]) : dd[k];
-  $('cfAdsOn').value = D.ads.enabled === false ? '0' : '1'; $('cfPerDay').value = D.ads.perDay; $('cfGap').value = D.ads.gapMin; $('cfMinF').value = D.ads.minFights;
+  $('cfAdsOn').value = D.ads.enabled === false ? '0' : '1'; $('cfPerDay').value = D.ads.perDay; $('cfGap').value = D.ads.gapMin; $('cfMinF').value = D.ads.minFights; $('cfInterId').value = D.ads.interId || ''; $('cfInterMin').value = D.ads.interMin || 15;
   $('cfHour').value = D.lembretes.hour; $('cfBoom').value = D.boom.chance;
   const av = D.aviso || {}; $('cfAvPt').value = av.pt || ''; $('cfAvEn').value = av.en || ''; $('cfAvEs').value = av.es || ''; $('cfAvStart').value = toLocal(av.start); $('cfAvEnd').value = toLocal(av.end);
   $('cfJson').value = JSON.stringify(CFG_DOC, null, 1);
@@ -545,7 +549,8 @@ async function loadCfg() {
 $('btnCfg').onclick = async () => {
   let doc; try { doc = JSON.parse($('cfJson').value || '{}'); } catch (e) { $('cfgMsg').textContent = 'JSON avançado inválido: ' + e.message; return; }
   doc.defaults = doc.defaults || {}; const num = (id, d) => { const v = parseFloat($(id).value); return isFinite(v) ? v : d; };
-  doc.defaults.ads = Object.assign({}, doc.defaults.ads, { enabled: $('cfAdsOn').value === '1', perDay: num('cfPerDay', 4), gapMin: num('cfGap', 6), minFights: num('cfMinF', 3) });
+  doc.defaults.ads = Object.assign({}, doc.defaults.ads, { enabled: $('cfAdsOn').value === '1', perDay: num('cfPerDay', 4), gapMin: num('cfGap', 6), minFights: num('cfMinF', 3), interMin: num('cfInterMin', 15), interId: $('cfInterId').value.trim() });
+  if (doc.defaults.ads.interId && !/^ca-app-pub-\d{10,20}\/\d{6,12}$/.test(doc.defaults.ads.interId)) { $('cfgMsg').textContent = 'ID do intersticial inválido. Copie do AdMob, no formato ca-app-pub-…/…'; return; }
   doc.defaults.lembretes = Object.assign({}, doc.defaults.lembretes, { hour: num('cfHour', 19) });
   doc.defaults.boom = Object.assign({}, doc.defaults.boom, { chance: num('cfBoom', 0.14) });
   const pt = $('cfAvPt').value.trim();
