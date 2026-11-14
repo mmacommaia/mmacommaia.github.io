@@ -337,6 +337,7 @@ function eventCard(id, ev) {
       <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option><option value="nc">🚫 Cancelada / sem resultado</option></select>
       <select data-i="${i}" data-k="m"><option value="">Como…</option>${Object.entries(MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
       <select data-i="${i}" data-k="r"><option value="">Round…</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">R${r}</option>`).join('')}</select></div>`).join('')}</div>
+    ${ev.auto && Object.keys(ev.auto).length ? `<div class="row" style="margin-top:10px"><button data-act="auto">🤖 Usar resultados do robô (${Object.keys(ev.auto).length})</button><span class="muted">provisórios, lidos da ESPN: confira as cores e clique em Salvar</span></div>` : ''}
     <div class="row" style="margin-top:10px"><button class="ghost" data-act="paste">📋 Colar resultados</button><span class="muted">copie a lista de resultados de qualquer site e eu preencho vencedor, método e round</span></div>
     <div data-pastebox hidden>
       <div data-drop tabindex="0" style="margin-top:6px;border:2px dashed #3a4a5a;border-radius:10px;padding:14px;text-align:center;cursor:pointer">
@@ -399,6 +400,9 @@ function eventCard(id, ev) {
     if (ok) dirty();
     po.innerHTML = `Preenchi ${ok} de ${fs.length} ${fs.length === 1 ? 'luta' : 'lutas'}.` + (check.length ? ` <b style="color:#f2c94c">Confira as amarelas:</b> ${check.map(esc).join(' · ')}.` : '') + (miss.length ? ` <b style="color:#e0605a">Não achei ${src}:</b> ${miss.map(esc).join(' · ')}.` : '') + (ok ? ' Depois clique em Salvar: o ranking é calculado junto.' : '');
   };
+  // resultados que o robô do celular gravou como provisórios (campo "auto"): só preenche os campos, quem salva é você
+  const ab = el.querySelector('[data-act="auto"]');
+  if (ab) ab.onclick = () => { el.querySelector('[data-pastebox]').hidden = false; applyRes((ev.fights || []).map(f => (ev.auto || {})[f.id] || null), 'pelo robô'); };
   el.querySelector('[data-act="fill"]').onclick = () => {
     const po = el.querySelector('[data-pasteout]'); const txt = el.querySelector('[data-paste]').value; if (!txt.trim()) { po.textContent = 'Cole o texto primeiro.'; return; }
     applyRes(parseResults(txt, fsRounds()), 'no texto');
