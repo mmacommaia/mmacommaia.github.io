@@ -47,12 +47,50 @@
   .crop canvas { background: repeating-conic-gradient(#1c2c40 0 25%, #12202f 0 50%) 0 0/16px 16px; border-radius: 50%; border: 2px solid var(--gold); }
   .crop canvas.body { border-radius: 8px; border-color: var(--line); }
   input[type=range] { padding: 0; }
+
+  /* v4.74: visual novo */
+  body { background: radial-gradient(1200px 500px at 50% -200px, #1f3550 0%, var(--bg) 60%) fixed, var(--bg); }
+  .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 6px; }
+  .brand .logo { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; font-size: 26px; background: linear-gradient(135deg, #3a2a0a, #e8b44a); box-shadow: 0 6px 18px rgba(232,180,74,.25); }
+  .brand h1 { margin: 0; } .brand p { margin: 0; }
+  .topnav { position: sticky; top: 0; z-index: 5; display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; margin: 4px 0 0; background: linear-gradient(var(--bg) 70%, transparent); }
+  .topnav a { flex: none; color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 700; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: #13233a; }
+  .topnav a:hover { border-color: var(--gold); }
+  h2 { scroll-margin-top: 60px; }
+  .card { box-shadow: 0 8px 22px rgba(0,0,0,.18); }
+  .evcard { border-left: 4px solid #3fbf7f; transition: opacity .5s, transform .5s; }
+  .evcard.st-closed { border-left-color: #f2c94c; } .evcard.st-done { border-left-color: #6b7c90; }
+  .evcard.closing { opacity: .25; transform: scale(.98); }
+  .evhead { display: flex; gap: 10px; align-items: flex-start; }
+  .evhead h3 { margin: 4px 0 6px; font-size: 18px; line-height: 1.25; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px; }
+  .pill.st-open { background: rgba(63,191,127,.15); color: #6fe0a5; } .pill.st-closed { background: rgba(242,201,76,.15); color: #f2c94c; } .pill.st-done { background: rgba(159,176,194,.15); color: var(--muted); }
+  .prog { height: 6px; border-radius: 3px; background: #0b141e; overflow: hidden; max-width: 260px; margin-bottom: 2px; } .prog i { display: block; height: 100%; background: linear-gradient(90deg, #3fbf7f, var(--gold)); }
+  .stsel { margin: 0; display: grid; gap: 2px; } .stsel span { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .donehint { background: rgba(159,176,194,.1); border-radius: 8px; padding: 8px 10px; }
+  .fight { border-radius: 10px; padding: 10px 8px; margin: 6px 0; border: 1px solid transparent; border-top: 1px solid var(--line); }
+  .fight.has-w { background: rgba(63,191,127,.06); border-color: rgba(63,191,127,.25); }
+  .fight[data-w="a"] [data-face="b"], .fight[data-w="b"] [data-face="a"] { opacity: .35; filter: grayscale(1); }
+  .fight[data-w="a"] [data-face="a"], .fight[data-w="b"] [data-face="b"] { border: 3px solid var(--gold); box-shadow: 0 0 12px rgba(232,180,74,.5); }
+  .fight[data-w="d"] { background: rgba(232,180,74,.07); border-color: rgba(232,180,74,.35); }
+  .fight[data-w="nc"] { opacity: .6; }
+  select[data-k="w"] { font-weight: 700; }
+  .donebox { margin: 14px 0; border: 1px solid var(--line); border-radius: 12px; background: #13233a; }
+  .donebox > summary { display: flex; gap: 8px; align-items: center; padding: 12px 14px; cursor: pointer; font-weight: 800; list-style: none; }
+  .donebox > summary::-webkit-details-marker { display: none; }
+  .donebox .cnt { background: var(--line); border-radius: 999px; padding: 0 9px; font-size: 13px; }
+  .evrow { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); }
+  .evrow-i { flex: 1; min-width: 0; display: grid; } .evrow-i b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  button.sm { padding: 6px 12px; font-size: 13px; }
+  .donebox .evcard { margin: 8px; }
+  .newbox > summary { cursor: pointer; padding: 2px 0; } .newbox[open] > summary { margin-bottom: 8px; }
+  .empty { text-align: center; }
+  @media (max-width: 520px) { .evhead { flex-direction: column; } }
 </style>
 </head>
 <body>
 <main>
-  <h1>🎯 Admin do Bolão</h1>
-  <p class="muted">MMA - Rumo à Glória · só o dono do jogo consegue salvar aqui (as regras do banco checam o seu login).</p>
+  <header class="brand"><span class="logo">🏆</span><div><h1>Admin do Bolão</h1><p class="muted">MMA Ranking League · Rumo à Glória · só o dono do jogo consegue salvar aqui</p></div></header>
   <div class="msg" id="msg"></div>
 
   <section id="login" class="card">
@@ -71,8 +109,11 @@
       <div class="row" style="margin-top:8px"><button id="gkSave">Salvar chaves</button><button class="ghost" id="gkShow">Mostrar/ocultar</button><button class="ghost" id="gkDel">Apagar deste PC</button></div>
     </details>
 
-    <h2>➕ Novo evento</h2>
-    <div class="card">
+    <nav class="topnav"><a href="#evSec">📋 Eventos</a><a href="#newSec">➕ Novo</a><a href="#bulkSec">📥 Vários</a><a href="#cfgSec">⚙️ Ajustes</a><a href="#repSec">🚩 Denúncias</a></nav>
+    <h2 id="evSec">📋 Eventos</h2>
+    <div id="events"><p class="muted">Carregando…</p></div>
+
+    <details class="card newbox" id="newSec"><summary><b>➕ Novo evento</b> <span class="muted">criar o próximo card</span></summary>
       <label>Nome do evento</label><input id="evName" placeholder="UFC 330: Poatan x Ankalaev">
       <div class="row">
         <div class="grow"><label>Data do evento</label><input id="evDate" type="date"></div>
@@ -82,12 +123,16 @@
       <textarea id="evFights" placeholder="Alex Pereira x Magomed Ankalaev - 01:00&#10;Charles Oliveira x Arman Tsarukyan - 00:30"></textarea>
       <p class="muted">Fotos dos lutadores, arte do evento e horários em sequência você coloca no card do evento, depois de criar.</p>
       <div class="row" style="margin-top:10px"><button id="btnCreate">Criar evento</button></div>
-    </div>
+    </details>
 
-    <h2>📋 Eventos</h2>
-    <div id="events"><p class="muted">Carregando…</p></div>
+    <details class="card newbox" id="bulkSec"><summary><b>📥 Vários eventos de uma vez</b> <span class="muted">cole a lista que o Claude te mandar</span></summary>
+      <p class="muted">Um evento por bloco. A 1ª linha do bloco começa com <b>===</b>: nome | data (AAAA-MM-DD) | hora que os palpites fecham (Brasília). Depois, uma luta por linha (a principal primeiro), com horário opcional no fim.</p>
+      <textarea id="bulkTxt" rows="8" spellcheck="false" placeholder="=== UFC 331: Topuria x Holloway | 2026-11-29 | 23:00&#10;Ilia Topuria x Max Holloway - 01:00&#10;Jéssica Andrade x Zhang Weili - 00:30&#10;&#10;=== UFC Fight Night: Moreno x Royval | 2026-12-06 | 20:00&#10;Brandon Moreno x Brandon Royval"></textarea>
+      <div class="row" style="margin-top:8px"><button class="ghost" id="bulkPrev">👀 Conferir</button><button id="bulkGo" hidden>Criar todos</button></div>
+      <div class="muted" id="bulkOut"></div>
+    </details>
 
-    <h2>⚙️ Ajustes ao vivo (motor de regras)</h2>
+    <h2 id="cfgSec">⚙️ Ajustes ao vivo (motor de regras)</h2>
     <div class="card" id="cfgBox">
       <p class="muted">Muda o jogo de todo mundo sem lançar versão nova. Cada celular busca isto no máximo a cada 12 horas. O jogo tem travas: número fora do limite é cortado.</p>
       <div class="row">
@@ -117,7 +162,7 @@
       <div class="row" style="margin-top:10px"><button id="btnCfg">Salvar ajustes</button><span class="muted grow" id="cfgMsg"></span></div>
     </div>
 
-    <h2>🚩 Denúncias da Arena</h2>
+    <h2 id="repSec">🚩 Denúncias da Arena</h2>
     <div id="reports"><p class="muted">Carregando…</p></div>
   </section>
 </main>
@@ -146,12 +191,13 @@ const MET = { ko: 'Nocaute', sub: 'Finalização', dec: 'Decisão' };
 // mesma conta do jogo (online.js): vencedor 3 · zebra +2 · método +2 · round +2 (principal, nocaute/finalização) · golpe de ouro x2
 // ranking nacional: top 50 de cada país (a lista já vem ordenada)
 function byCountry(list) { const o = {}; for (const r of list) { const c = r.cc || 'BR'; const x = o[c] = o[c] || { list: [], total: 0 }; x.total++; if (x.list.length < 50) x.list.push({ uid: r.uid, name: r.name, pts: r.pts }); } return o; }
-const isRes = f => f.w === 'a' || f.w === 'b';
+const isRes = f => f.w === 'a' || f.w === 'b' || f.w === 'd'; // 'd' = empate (vale 6 pra quem cravou)
 // ---------- colar resultados: lê um texto copiado de qualquer site e descobre vencedor, método e round de cada luta ----------
 const plain = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9:.()\n\t ]+/g, ' ').replace(/[ \t]+/g, ' ');
 const WIN_MID = /\b(def|defeats?|defeated|derrot\w*|venc\w*|beats?|bate\w*|over|finaliz\w*|nocaute\w*|supera\w*|submete\w*|submits?|stops?|outpoints?|ko s|tko s|d)\b/;
 const LOSE_MID = /\b(perde\w*|lost to|loses to|e derrotad\w* por|foi (finalizad|nocautead|derrotad)\w* por)\b/;
-const NC_RX = /\b(no contest|sem resultado|nc|draw|empate|cancelad\w*|cancel+ed|scrapped)\b/;
+const NC_RX = /\b(no contest|sem resultado|nc|cancelad\w*|cancel+ed|scrapped)\b/;
+const DRAW_RX = /\b(draw|empate|empatad\w*|majority draw|split draw)\b/;
 function readMethod(t) {
   const sub = t.search(/\b(submission|finaliza\w*|sub|tap\w*|choke|armbar|mata leao|guilhotina|guillotine|triangulo|triangle|kimura|chave|heel hook|rear naked)\b/);
   const ko = t.search(/\b(t?ko|knockout|nocaute\w*|doctor s? ?stoppage|interrup\w*|corner stoppage|stoppage|punches|socos|retirement)\b/);
@@ -186,6 +232,7 @@ function parseResults(text, fights) {
     else if (WIN_MID.test(mid)) w = aFirst ? 'a' : 'b';
     else if (/\b(win|winner|vencedor\w*|vitoria de)\b ?:? ?$/.test(lead)) w = aFirst ? 'a' : 'b';
     else if (/^[^a-z]{0,6}\b(wins?|vence\w*|won|ganh\w*)\b/.test(tail)) w = aFirst ? 'b' : 'a';
+    if (DRAW_RX.test(mid) || (!w && DRAW_RX.test(tail.slice(0, 80)))) return { w: 'd', sure: false };
     if (NC_RX.test(mid) || (!w && NC_RX.test(tail.slice(0, 80)))) return { w: 'nc', sure: false };
     const m = readMethod(tail) || readMethod(mid);
     if (!w && !m) return null; // os dois nomes aparecem, mas sem resultado (ex.: colaram o card, não o resultado): não inventa
@@ -214,8 +261,8 @@ async function readShots(shots, fights) {
 Lutas do card (índice, corner A, corner B, rounds):
 ${list}
 Para CADA luta da lista, responda com o que as imagens mostram. Os nomes podem aparecer abreviados, só com sobrenome ou com apelido.
-Responda SOMENTE um JSON: {"fights":[{"i":0,"winner":"a"|"b"|"nc"|null,"method":"ko"|"sub"|"dec"|null,"round":1-5|null,"sure":true|false}]}
-- winner: "a" ou "b" pelo corner da lista; "nc" para no contest, empate ou luta cancelada; null se a luta não aparece nas imagens.
+Responda SOMENTE um JSON: {"fights":[{"i":0,"winner":"a"|"b"|"draw"|"nc"|null,"method":"ko"|"sub"|"dec"|null,"round":1-5|null,"sure":true|false}]}
+- winner: "a" ou "b" pelo corner da lista; "draw" para empate; "nc" para no contest ou luta cancelada; null se a luta não aparece nas imagens.
 - method: "ko" para KO/TKO/nocaute técnico/interrupção médica ou do córner; "sub" para finalização; "dec" para qualquer decisão.
 - round: o round em que acabou (só para ko e sub); null para decisão.
 - sure: false se você teve qualquer dúvida (nome parecido, texto cortado, imagem borrada). Nunca invente: na dúvida, null.`;
@@ -230,7 +277,7 @@ Responda SOMENTE um JSON: {"fights":[{"i":0,"winner":"a"|"b"|"nc"|null,"method":
     const j = await r.json(); const txt = (((j.candidates || [])[0] || {}).content || {}).parts || []; const raw = txt.map(p => p.text || '').join('');
     let out; try { out = JSON.parse(raw.replace(/^```(json)?|```$/g, '').trim()); } catch (e) { last = model + ': resposta fora do formato'; continue; }
     const by = {}; for (const f of (out.fights || [])) if (Number.isInteger(f.i)) by[f.i] = f;
-    const res = fights.map((f, i) => { const x = by[i]; if (!x || !['a', 'b', 'nc'].includes(x.winner)) return null; if (x.winner === 'nc') return { w: 'nc', sure: false };
+    const res = fights.map((f, i) => { const x = by[i]; if (!x || !['a', 'b', 'nc', 'draw'].includes(x.winner)) return null; if (x.winner === 'nc') return { w: 'nc', sure: false }; if (x.winner === 'draw') return { w: 'd', sure: x.sure === true };
       const m = ['ko', 'sub', 'dec'].includes(x.method) ? x.method : ''; let rd = Number.isInteger(x.round) && x.round >= 1 && x.round <= f.rounds ? x.round : 0; if (m === 'dec') rd = 0;
       return { w: x.winner, m, r: rd, sure: x.sure === true && !!m && (m === 'dec' || !!rd) }; });
     return { res, via: `lido com ${model}${keys.length > 1 ? ', chave ' + (ki + 1) : ''}` };
@@ -239,7 +286,7 @@ Responda SOMENTE um JSON: {"fights":[{"i":0,"winner":"a"|"b"|"nc"|null,"method":
 }
 // 'nc' = luta cancelada: não vale ponto; golpe de ouro nela passa pra primeira luta do card que valeu (igual ao jogo)
 const boostId = (fights, picks) => { const b = fights.find(f => picks && picks[f.id] && picks[f.id].x2); if (!b) return null; if (b.w !== 'nc') return b.id; const m = fights.find(isRes); return m ? m.id : null; };
-function fightPts(f, k, x2) { if (!k || !isRes(f) || k.w !== f.w) return 0; let p = 3; if (f.dog && f.dog === f.w) p += 2; if (k.m && k.m === f.m) { p += 2; if (f.r && k.r && (f.m === 'ko' || f.m === 'sub') && +k.r === +f.r) p += 2; } return (x2 === undefined ? k.x2 : x2) ? p * 2 : p; }
+function fightPts(f, k, x2) { if (!k || !isRes(f) || k.w !== f.w) return 0; if (f.w === 'd') return (x2 === undefined ? k.x2 : x2) ? 12 : 6; let p = 3; if (f.dog && f.dog === f.w) p += 2; if (k.m && k.m === f.m) { p += 2; if (f.r && k.r && (f.m === 'ko' || f.m === 'sub') && +k.r === +f.r) p += 2; } return (x2 === undefined ? k.x2 : x2) ? p * 2 : p; }
 
 // chaves do Gemini (só neste navegador)
 const gkInfo = () => { const n = geminiKeys().length; $('gkInfo').textContent = n ? `· ${n} ${n === 1 ? 'chave salva' : 'chaves salvas'}` : '· nenhuma chave'; };
@@ -277,16 +324,44 @@ async function saveImgs(id, img, fights) {
 }
 // categorias de peso (vão na imagem dos stories; o jogo traduz)
 const CATS = ['Peso-palha', 'Peso-mosca', 'Peso-galo', 'Peso-pena', 'Peso-leve', 'Peso-meio-médio', 'Peso-médio', 'Peso-meio-pesado', 'Peso-pesado', 'Peso-palha feminino', 'Peso-mosca feminino', 'Peso-galo feminino', 'Peso-pena feminino', 'Peso-casado'];
+const fmtDay = ms => ms ? new Date(ms).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 const fmtBrt = ms => { if (!ms) return '—'; const d = new Date(ms - 3 * 3600e3); return d.toISOString().slice(0, 16).replace('T', ' ') + ' (Brasília)'; };
 
+const parseFights = txt => txt.split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => { let t = ''; const tm = l.match(/\s*[-–|@]\s*(\d{1,2})[:h](\d{2})\s*$/); if (tm) { t = tm[1].padStart(2, '0') + ':' + tm[2]; l = l.slice(0, tm.index); } const p = l.split(/\s+(?:x|vs\.?|X|VS)\s+/); if (p.length !== 2) return null; const o = { id: 'f' + (i + 1), a: p[0].trim(), b: p[1].trim() }; if (t) o.t = t; return o; });
 $('btnCreate').onclick = async () => {
   const name = $('evName').value.trim(), date = $('evDate').value, lock = brt($('evLock').value);
-  const fights = $('evFights').value.split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => { let t = ''; const tm = l.match(/\s*[-–|@]\s*(\d{1,2})[:h](\d{2})\s*$/); if (tm) { t = tm[1].padStart(2, '0') + ':' + tm[2]; l = l.slice(0, tm.index); } const p = l.split(/\s+(?:x|vs\.?|X|VS)\s+/); if (p.length !== 2) return null; const o = { id: 'f' + (i + 1), a: p[0].trim(), b: p[1].trim() }; if (t) o.t = t; return o; });
+  const fights = parseFights($('evFights').value);
   if (!name || !date || !lock) return say('Preencha nome, data e quando os palpites fecham.');
   if (!fights.length || fights.includes(null)) return say('Confira as lutas: uma por linha, no formato "Lutador A x Lutador B".');
   fights.forEach((f, i) => { f.main = i < 2; f.rounds = i === 0 ? 5 : 3; });
   try { await db.collection('bolao').add({ name, date: brt(date + 'T12:00'), lock, status: 'open', season: date.slice(0, 7), boost: 1, fights, locks: locksOf(brt(date + 'T12:00'), fights), ...lockLists(locksOf(brt(date + 'T12:00'), fights)) }); say('✅ Evento criado. As 2 primeiras lutas ficaram como principais (com round); ajuste abaixo se quiser.'); $('evName').value = ''; $('evFights').value = ''; loadEvents(); }
   catch (e) { say('Não salvou: ' + e.message); }
+};
+
+// 📥 vários eventos: confere tudo antes de gravar e pula evento com o mesmo nome de um que já existe
+function parseBulk(txt) {
+  const out = []; let cur = null;
+  for (const raw of String(txt || '').split('\n')) { const l = raw.trim(); if (!l) continue;
+    if (l.startsWith('===')) { const [name, date, hm] = l.replace(/^=+/, '').split('|').map(x => (x || '').trim()); cur = { name, date, hm, lines: [], err: '' }; out.push(cur);
+      if (!name) cur.err = 'sem nome'; else if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) cur.err = 'data no formato AAAA-MM-DD'; else if (!/^\d{1,2}:\d{2}$/.test(hm || '')) cur.err = 'hora no formato HH:MM'; continue; }
+    if (cur) cur.lines.push(l); }
+  for (const e of out) { e.fights = parseFights(e.lines.join('\n')); if (!e.err && (!e.fights.length || e.fights.includes(null))) e.err = 'confira as lutas (Lutador A x Lutador B)'; if (!e.err) { e.fights.forEach((f, i) => { f.main = i < 2; f.rounds = i === 0 ? 5 : 3; }); e.lock = brt(e.date + 'T' + e.hm.padStart(5, '0')); } }
+  return out;
+}
+let bulkList = [];
+$('bulkPrev').onclick = async () => {
+  bulkList = parseBulk($('bulkTxt').value); const have = new Set(); try { (await db.collection('bolao').get()).forEach(d => have.add(String(d.data().name || '').trim().toLowerCase())); } catch (e) { }
+  bulkList.forEach(e => { if (!e.err && have.has(e.name.toLowerCase())) e.skip = true; });
+  const ok = bulkList.filter(e => !e.err && !e.skip);
+  $('bulkOut').innerHTML = bulkList.length ? bulkList.map(e => `<div class="evrow"><div class="evrow-i"><b>${e.err ? '❌' : e.skip ? '⏭️' : '✅'} ${esc(e.name || '(sem nome)')}</b><span class="muted">${e.err ? esc(e.err) : e.skip ? 'já existe, vou pular' : `${esc(e.date)} · fecha ${esc(e.hm)} · ${e.fights.length} lutas · principal: ${esc(e.fights[0].a)} x ${esc(e.fights[0].b)}`}</span></div></div>`).join('') : 'Nada pra criar: confira o formato.';
+  $('bulkGo').hidden = !ok.length; $('bulkGo').textContent = `Criar ${ok.length} ${ok.length === 1 ? 'evento' : 'eventos'}`;
+};
+$('bulkGo').onclick = async () => {
+  const ok = bulkList.filter(e => !e.err && !e.skip); if (!ok.length) return; $('bulkGo').disabled = true; let n = 0;
+  try { for (const e of ok) { const d0 = brt(e.date + 'T12:00'); await db.collection('bolao').add({ name: e.name, date: d0, lock: e.lock, status: 'open', season: e.date.slice(0, 7), boost: 1, fights: e.fights, locks: locksOf(d0, e.fights), ...lockLists(locksOf(d0, e.fights)) }); n++; }
+    $('bulkOut').innerHTML = `✅ ${n} ${n === 1 ? 'evento criado' : 'eventos criados'}. Fotos e arte você coloca em cada card.`; $('bulkTxt').value = ''; $('bulkGo').hidden = true; loadEvents(); }
+  catch (err) { $('bulkOut').textContent = `Criei ${n}, parei no erro: ${err.message}`; }
+  $('bulkGo').disabled = false;
 };
 
 async function loadEvents() {
@@ -316,13 +391,31 @@ async function loadEvents() {
       };
       box.appendChild(b);
     }
-    s.forEach(doc => box.appendChild(eventCard(doc.id, doc.data())));
+    // em andamento primeiro (o mais próximo em cima); encerrados viram uma linha compacta que abre num clique
+    const docs = s.docs.map(d => ({ id: d.id, ev: d.data() }));
+    const act = docs.filter(x => x.ev.status !== 'done').sort((a, b) => (a.ev.date || 0) - (b.ev.date || 0));
+    const fin = docs.filter(x => x.ev.status === 'done');
+    if (act.length) act.forEach(x => box.appendChild(eventCard(x.id, x.ev)));
+    else { const e = document.createElement('div'); e.className = 'card empty'; e.innerHTML = '<b>Nenhum evento em andamento.</b><p class="muted">Crie o próximo card em ➕ Novo evento.</p>'; box.appendChild(e); }
+    if (fin.length) {
+      const d = document.createElement('details'); d.className = 'donebox'; d.innerHTML = `<summary><span>✅ Encerrados</span><span class="cnt">${fin.length}</span><span class="muted grow" style="text-align:right">clique pra ver</span></summary>`;
+      fin.forEach(x => { const r = document.createElement('div'); r.className = 'evrow'; const F = x.ev.fights || [];
+        r.innerHTML = `<div class="evrow-i"><b>${esc(x.ev.name)}</b><span class="muted">${esc(fmtDay(x.ev.date))} · ${F.length} lutas · ${F.filter(isRes).length} com resultado${F.some(f => f.w === 'd') ? ' · 🤝 teve empate' : ''}</span></div><button class="ghost sm">Abrir</button>`;
+        r.querySelector('button').onclick = () => { const c = eventCard(x.id, x.ev); c.classList.add('opened'); r.replaceWith(c); };
+        d.appendChild(r); });
+      box.appendChild(d);
+    }
   } catch (e) { box.innerHTML = '<p class="muted">Erro ao carregar: ' + esc(e.message) + '</p>'; }
 }
 function eventCard(id, ev) {
   const el = document.createElement('div'); el.className = 'card';
-  el.innerHTML = `<div class="row"><b class="grow">${esc(ev.name)}</b>
-      <select data-k="status" style="width:auto"><option value="open">Aberto</option><option value="closed">Fechado</option><option value="done">Encerrado</option></select></div>
+  const F0 = ev.fights || [], nr = F0.filter(f => f.w).length, stt = ev.status || 'open';
+  const pill = { open: ['🟢', 'Aberto', 'st-open'], closed: ['🔒', 'Fechado', 'st-closed'], done: ['✅', 'Encerrado', 'st-done'] }[stt] || ['🟢', 'Aberto', 'st-open'];
+  el.className = 'card evcard ' + pill[2];
+  el.innerHTML = `<div class="evhead"><div class="grow"><span class="pill ${pill[2]}">${pill[0]} ${pill[1]}</span><span class="muted"> ${esc(fmtDay(ev.date))}</span><h3>${esc(ev.name)}</h3>
+      <div class="prog" title="${nr} de ${F0.length} lutas com resultado"><i style="width:${F0.length ? Math.round(100 * nr / F0.length) : 0}%"></i></div><span class="muted">${nr}/${F0.length} resultados</span></div>
+      <label class="stsel"><span>Status</span><select data-k="status" style="width:auto"><option value="open">Aberto</option><option value="closed">Fechado</option><option value="done">Encerrado</option></select></label></div>
+    <p class="muted donehint" data-donehint hidden>✅ Ao salvar como <b>Encerrado</b>, este evento sai daqui e vai pra lista compacta de Encerrados (os jogadores veem só o resumo).</p>
     <p class="muted">Palpites fecham: ${esc(fmtBrt(ev.lock))}</p>
     <div class="row"><span class="muted">📸 Card principal (vai na imagem dos stories): as primeiras</span><input type="number" data-k="mc" min="1" max="15" value="${ev.mc || 5}" style="width:70px!important"><span class="muted">lutas</span></div>
     <div class="row"><span class="muted">⏳ Prometo os pontos em até</span><input type="number" data-k="resH" min="1" max="72" value="${ev.resH || 12}" style="width:70px!important"><span class="muted">horas depois da última luta (aparece pro jogador no app)</span></div>
@@ -334,10 +427,9 @@ function eventCard(id, ev) {
       <select data-i="${i}" data-k="cat"><option value="">Categoria…</option>${CATS.map(c => `<option>${c}</option>`).join('')}</select>
       <select data-i="${i}" data-k="rounds"><option value="3">3 rounds</option><option value="5">5 rounds</option></select>
       <select data-i="${i}" data-k="dog"><option value="">Zebra: nenhuma</option><option value="a">Zebra: ${esc(f.a)}</option><option value="b">Zebra: ${esc(f.b)}</option></select>
-      <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option><option value="nc">🚫 Cancelada / sem resultado</option></select>
+      <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option><option value="d">🤝 Empate</option><option value="nc">🚫 Cancelada / sem resultado</option></select>
       <select data-i="${i}" data-k="m"><option value="">Como…</option>${Object.entries(MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
       <select data-i="${i}" data-k="r"><option value="">Round…</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">R${r}</option>`).join('')}</select></div>`).join('')}</div>
-    ${ev.auto && Object.keys(ev.auto).length ? `<div class="row" style="margin-top:10px"><button data-act="auto">🤖 Usar resultados do robô (${Object.keys(ev.auto).length})</button><span class="muted">provisórios, lidos da ESPN: confira as cores e clique em Salvar</span></div>` : ''}
     <div class="row" style="margin-top:10px"><button class="ghost" data-act="paste">📋 Colar resultados</button><span class="muted">copie a lista de resultados de qualquer site e eu preencho vencedor, método e round</span></div>
     <div data-pastebox hidden>
       <div data-drop tabindex="0" style="margin-top:6px;border:2px dashed #3a4a5a;border-radius:10px;padding:14px;text-align:center;cursor:pointer">
@@ -358,13 +450,16 @@ function eventCard(id, ev) {
   const img = { poster: ev.poster || '', fights: (ev.fights || []).map(f => ({ imgA: f.imgA || '', imgB: f.imgB || '' })) };
   const dirty = () => { el.querySelector('[data-unsaved]').hidden = false; };
   if (ev.imgAt) imgRef(id).get().then(d => { const x = d.exists ? d.data() : null; if (!x) return; if (!img.poster) img.poster = x.poster || ''; (ev.fights || []).forEach((f, i) => { const g = x.f && x.f[f.id]; if (g) { if (!img.fights[i].imgA) img.fights[i].imgA = g.a || ''; if (!img.fights[i].imgB) img.fights[i].imgB = g.b || ''; } }); paint(); }).catch(() => { });
-  el.addEventListener('change', e => { if (e.target.matches('select, input')) dirty(); });
+  el.addEventListener('change', e => { if (e.target.matches('select, input')) dirty(); if (e.target.matches('[data-k="status"]')) el.querySelector('[data-donehint]').hidden = !(e.target.value === 'done' && ev.status !== 'done'); if (e.target.matches('[data-k="w"]')) paintW(); });
+  // vencedor escolhido: a foto ganha borda dourada, o outro fica apagado; empate deixa os dois iguais
+  const paintW = () => (ev.fights || []).forEach((f, i) => { const w = el.querySelector(`[data-i="${i}"][data-k="w"]`).value; const row = el.querySelector(`[data-i="${i}"][data-k="w"]`).closest('.fight');
+    row.classList.toggle('has-w', !!w); row.dataset.w = w; });
   const paint = () => {
     const p = el.querySelector('[data-poster]'); p.hidden = !img.poster; if (img.poster) p.src = img.poster;
     el.querySelector('[data-act="noposter"]').hidden = !img.poster;
     el.querySelectorAll('[data-face]').forEach(d => { const s = img.fights[+d.dataset.i]['img' + d.dataset.face.toUpperCase()]; d.style.backgroundImage = s ? `url("${s}")` : ''; d.classList.toggle('has', !!s); });
   };
-  paint();
+  paint(); paintW();
   el.querySelectorAll('[data-face]').forEach(d => d.onclick = async () => {
     const i = +d.dataset.i, side = d.dataset.face.toUpperCase(), f = ev.fights[i], slot = img.fights[i];
     const res = await editFighter(side === 'A' ? f.a : f.b, !!slot['img' + side]);
@@ -395,14 +490,11 @@ function eventCard(id, ev) {
     let ok = 0; const check = [], miss = [];
     res.forEach((r, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const box = q('w').closest('.fight'); box.classList.remove('p-ok', 'p-chk');
       if (!r) { miss.push(fs[i].a + ' x ' + fs[i].b); return; }
-      q('w').value = r.w; q('m').value = r.w === 'nc' ? '' : r.m || ''; q('r').value = r.w === 'nc' || !r.r ? '' : String(r.r);
+      q('w').value = r.w; q('m').value = r.w === 'nc' || r.w === 'd' ? '' : r.m || ''; q('r').value = r.w === 'nc' || r.w === 'd' || !r.r ? '' : String(r.r);
       ok++; box.classList.add(r.sure ? 'p-ok' : 'p-chk'); if (!r.sure) check.push(fs[i].a + ' x ' + fs[i].b); });
     if (ok) dirty();
     po.innerHTML = `Preenchi ${ok} de ${fs.length} ${fs.length === 1 ? 'luta' : 'lutas'}.` + (check.length ? ` <b style="color:#f2c94c">Confira as amarelas:</b> ${check.map(esc).join(' · ')}.` : '') + (miss.length ? ` <b style="color:#e0605a">Não achei ${src}:</b> ${miss.map(esc).join(' · ')}.` : '') + (ok ? ' Depois clique em Salvar: o ranking é calculado junto.' : '');
   };
-  // resultados que o robô do celular gravou como provisórios (campo "auto"): só preenche os campos, quem salva é você
-  const ab = el.querySelector('[data-act="auto"]');
-  if (ab) ab.onclick = () => { el.querySelector('[data-pastebox]').hidden = false; applyRes((ev.fights || []).map(f => (ev.auto || {})[f.id] || null), 'pelo robô'); };
   el.querySelector('[data-act="fill"]').onclick = () => {
     const po = el.querySelector('[data-pasteout]'); const txt = el.querySelector('[data-paste]').value; if (!txt.trim()) { po.textContent = 'Cole o texto primeiro.'; return; }
     applyRes(parseResults(txt, fsRounds()), 'no texto');
@@ -432,7 +524,9 @@ function eventCard(id, ev) {
     out.textContent = 'Salvando…'; let kb = 0;
     try { const r = await saveImgs(id, img, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); const changed = resKey(ev.fights) !== resKey(fights); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB).`;
       // resultado novo ou alterado: o ranking já sai junto, sem precisar de outro clique
-      if (changed && fights.some(f => f.w)) await calc('✅ Salvo. '); }
+      if (changed && fights.some(f => f.w)) await calc('✅ Salvo. ');
+      if (data.status === 'done' && ev.status !== 'done') { ev.status = 'done'; out.textContent += ' Evento encerrado: indo pra lista de Encerrados…'; el.classList.add('closing'); setTimeout(loadEvents, 1400); }
+      else ev.status = data.status; }
     catch (e) { out.textContent = 'Erro: ' + e.message; }
   };
   el.querySelector('[data-act="rank"]').onclick = () => calc('');
@@ -450,7 +544,7 @@ function eventCard(id, ev) {
       const rows = []; const cnt = {}; let batch = db.batch(), n = 0;
       for (const d of picks.docs) {
         const p = d.data(); let pts = 0; const bid = boostId(fresh.fights || [], p.picks);
-        for (const f of fresh.fights || []) { const k = p.picks && p.picks[f.id]; if (k && k.w) { cnt[f.id] = cnt[f.id] || { a: 0, b: 0 }; if (k.w === 'a' || k.w === 'b') cnt[f.id][k.w]++; } pts += fightPts(f, k, f.id === bid); }
+        for (const f of fresh.fights || []) { const k = p.picks && p.picks[f.id]; if (k && k.w) { cnt[f.id] = cnt[f.id] || { a: 0, b: 0, d: 0 }; if (k.w === 'a' || k.w === 'b' || k.w === 'd') cnt[f.id][k.w]++; } pts += fightPts(f, k, f.id === bid); }
         const cc = (profs[d.id] && profs[d.id].cc) || p.cc || '';
         const hits = (fresh.fights || []).filter(f => isRes(f) && p.picks && p.picks[f.id] && p.picks[f.id].w === f.w).length;
         rows.push({ uid: d.id, name: nameOf(d.id, p.name), pts, hits, cc: /^[A-Z]{2}$/.test(cc) ? cc : 'BR' }); if (p.look && !(profs[d.id] && profs[d.id].look)) (profs[d.id] = profs[d.id] || {}).look = p.look;
@@ -461,7 +555,7 @@ function eventCard(id, ev) {
       rows.forEach((r, i) => { r.pos = i && r.pts === rows[i - 1].pts ? rows[i - 1].pos : i + 1; }); // empate divide a posição
       // histórico de cada jogador (perfil no jogo): só quando já tem resultado. A gravação sai lá embaixo, junto com a posição no mês.
       const stat = {}; if (nRes) for (const r of rows) stat[r.uid] = { hist: { [id]: { n: fresh.name, d: fresh.date || 0, p: r.pts, pos: r.pos, of: rows.length, h: r.hits, f: nRes } } };
-      const pct = {}; for (const [k, c] of Object.entries(cnt)) { const t = c.a + c.b || 1; pct[k] = { a: Math.round(100 * c.a / t), b: Math.round(100 * c.b / t) }; }
+      const pct = {}; for (const [k, c] of Object.entries(cnt)) { const t = c.a + c.b + (c.d || 0) || 1; pct[k] = { a: Math.round(100 * c.a / t), b: Math.round(100 * c.b / t) }; if (c.d) pct[k].d = Math.round(100 * c.d / t); }
       const face = r => (profs[r.uid] && profs[r.uid].look && typeof profs[r.uid].look === 'object' ? Object.assign({ look: profs[r.uid].look }, r) : r); // avatar só nas listas de 100 (documento pequeno)
       await ref.collection('rank').doc('top').set({ list: rows.slice(0, 100).map(face), total: rows.length, at: Date.now() });
       await ref.collection('rank').doc('all').set({ list: rows.slice(0, 5000), at: Date.now() });
