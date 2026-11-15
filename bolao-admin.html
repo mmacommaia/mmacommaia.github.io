@@ -132,11 +132,44 @@
   .newbox > summary { cursor: pointer; padding: 2px 0; } .newbox[open] > summary { margin-bottom: 8px; }
   .empty { text-align: center; }
   @media (max-width: 560px) { .evhead { flex-direction: column; } .side .face { width: 70px; height: 70px; } .fname { font-size: 16px; } .mid { padding-top: 14px; } .xbtn { padding: 4px 7px; font-size: 11px; } .actbar { flex-wrap: wrap; } }
+
+  /* painel em abas */
+  .appbar { display: flex; align-items: center; gap: 8px; margin: 2px 0 8px; }
+  .tabs { position: sticky; top: 0; z-index: 6; display: flex; gap: 6px; overflow-x: auto; padding: 10px 0 12px; margin-bottom: 4px; background: linear-gradient(var(--bg) 80%, transparent); scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { flex: 1 0 auto; display: grid; justify-items: center; gap: 2px; min-width: 86px; padding: 9px 10px; border-radius: 14px; background: var(--card); color: var(--muted); border: 1px solid var(--line); font-size: 13px; font-weight: 700; }
+  .tabs button i { font-style: normal; font-size: 20px; }
+  .tabs button.on { color: #1a1205; background: linear-gradient(135deg, var(--gold2), var(--gold)); border-color: var(--gold); box-shadow: 0 8px 20px rgba(240,185,66,.3); }
+  .pane > h2:first-child { margin-top: 10px; } h2 .hint { font-family: Inter, system-ui, sans-serif; text-transform: none; letter-spacing: 0; font-size: 12.5px; font-weight: 500; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 14px; }
+  .kpis div { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 8px; text-align: center; }
+  .kpis b { display: block; font: 700 30px/1 Oswald, Impact, sans-serif; color: var(--gold2); } .kpis small { color: var(--muted); font-size: 12px; }
+  .hero { padding: 20px; border-radius: 20px; border: 1px solid rgba(63,207,142,.4); background: linear-gradient(120deg, rgba(63,207,142,.16), var(--card) 60%); box-shadow: 0 16px 36px rgba(0,0,0,.3); }
+  .hero.live { border-color: rgba(240,185,66,.5); background: linear-gradient(120deg, rgba(228,90,82,.18), var(--card) 60%); }
+  .hero h3 { font: 700 30px/1.1 Oswald, Impact, sans-serif; text-transform: uppercase; margin: 8px 0 6px; } .hero .row { margin-top: 12px; }
+  .evline { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 14px; margin-bottom: 8px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); color: var(--ink); }
+  .evline .grow { display: grid; } .evline i { font-style: normal; font-size: 22px; color: var(--gold); }
+  .cal { width: 48px; height: 52px; border-radius: 10px; background: #0b1520; border: 1px solid var(--line); display: grid; place-items: center; align-content: center; line-height: 1; } .cal b { font: 700 22px/1 Oswald, Impact, sans-serif; } .cal small { font-size: 10.5px; color: var(--gold); text-transform: uppercase; font-weight: 800; }
+  .quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; } .quick button { display: grid; justify-items: center; gap: 4px; padding: 14px 6px; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; font-size: 13px; } .quick i { font-style: normal; font-size: 24px; }
+  .pod { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 8px; align-items: end; margin: 14px 0 6px; }
+  .pd { display: grid; justify-items: center; gap: 2px; padding: 12px 6px; border-radius: 14px 14px 6px 6px; background: #0f1a27; border: 1px solid var(--line); text-align: center; }
+  .pd.p1 { padding-top: 22px; background: linear-gradient(180deg, rgba(240,185,66,.22), #0f1a27); border-color: rgba(240,185,66,.5); } .pd .md { font-size: 26px; } .pd b { font-size: 15px; } .pd small { color: var(--gold2); font-weight: 700; }
+  .rkbar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 4px; }
+  .rkbar .chip { flex: none; }
+  .rktab td { padding: 9px 6px; } .rktab .pos { width: 48px; color: var(--muted); font-weight: 800; } .rktab .pts { text-align: right; font-weight: 800; color: var(--gold2); }
+  .rktab tr:nth-child(odd) td { background: rgba(255,255,255,.02); }
+  /* card do evento abre/fecha */
+  .evhead[data-toggle] { cursor: pointer; } .evhead:hover h3 { color: var(--gold2); }
+  .chev { order: 9; flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #0b1520; border: 1px solid var(--line); color: var(--gold); transition: transform .2s; align-self: center; }
+  .evcard.collapsed .chev { transform: rotate(-90deg); }
+  .evcard.collapsed > *:not(.evhead) { display: none !important; }
+  .evcard.collapsed .evhead { border-bottom: 0; }
+  @media (max-width: 560px) { .kpis, .quick { grid-template-columns: repeat(2, 1fr); } .tabs button { min-width: 74px; } }
 </style>
 </head>
 <body>
 <main>
-  <header class="brand"><span class="logo">🏆</span><div><h1>Admin do Bolão</h1><p class="muted">MMA Ranking League · Rumo à Glória · só o dono do jogo consegue salvar aqui</p></div></header>
+  <header class="brand"><span class="logo">🏆</span><div><h1>Admin do Bolão</h1><p class="muted">MMA Ranking League · Rumo à Glória · <b class="ver">painel v4.76</b></p></div></header>
   <div class="msg" id="msg"></div>
 
   <section id="login" class="card">
@@ -146,20 +179,21 @@
   </section>
 
   <section id="app" hidden>
-    <div class="row"><span class="muted grow" id="who"></span><button class="ghost" id="btnOut">Sair</button></div>
-
-    <details class="card" id="gkBox" style="margin-bottom:14px"><summary><b>🔑 Chaves do Gemini</b> <span class="muted" id="gkInfo"></span></summary>
-      <p class="muted">Usadas só pra ler os prints dos resultados. Ficam guardadas apenas neste navegador, neste PC (não vão pro Firebase nem pro código). Uma por linha: se a 1ª der erro ou acabar a cota, o admin tenta a próxima.</p>
-      <textarea id="gkKeys" rows="3" spellcheck="false" autocomplete="off" style="width:100%;font-family:monospace;-webkit-text-security:disc" placeholder="Cole a chave aqui (uma por linha)"></textarea>
-      <label>Modelos, em ordem de tentativa</label><input id="gkModels" spellcheck="false" style="width:100%">
-      <div class="row" style="margin-top:8px"><button id="gkSave">Salvar chaves</button><button class="ghost" id="gkShow">Mostrar/ocultar</button><button class="ghost" id="gkDel">Apagar deste PC</button></div>
+    <div class="appbar"><span class="muted grow" id="who"></span><button class="ghost sm" id="btnOut">Sair</button></div>
+    <nav class="tabs" id="tabs">
+      <button data-go="inicio"><i>🏠</i>Início</button><button data-go="eventos"><i>📋</i>Eventos</button><button data-go="criar"><i>➕</i>Criar</button>
+      <button data-go="ranking"><i>🏆</i>Ranking</button><button data-go="ajustes"><i>⚙️</i>Ajustes</button><button data-go="denuncias"><i>🚩</i>Denúncias</button><button data-go="gemini"><i>🔑</i>Gemini</button>
+    </nav>
+    <div class="pane" data-pane="inicio"><div id="home"><p class="muted">Carregando…</p></div></div>
+    <div class="pane" data-pane="eventos" hidden><h2>📋 Eventos <span class="muted hint">clique no nome do evento pra abrir ou fechar</span></h2><div id="events"><p class="muted">Carregando…</p></div></div>
+    <div class="pane" data-pane="criar" hidden><h2>➕ Criar eventos</h2>
+    <details class="card newbox" id="bulkSec" open><summary><b>📥 Vários eventos de uma vez</b> <span class="muted">cole a lista que o Claude te mandar</span></summary>
+      <p class="muted">Um evento por bloco. A 1ª linha do bloco começa com <b>===</b>: nome | data (AAAA-MM-DD) | hora que os palpites fecham (Brasília). Depois, uma luta por linha (a principal primeiro), com horário opcional no fim.</p>
+      <textarea id="bulkTxt" rows="8" spellcheck="false" placeholder="=== UFC 331: Topuria x Holloway | 2026-11-29 | 23:00&#10;Ilia Topuria x Max Holloway - 01:00&#10;Jéssica Andrade x Zhang Weili - 00:30&#10;&#10;=== UFC Fight Night: Moreno x Royval | 2026-12-06 | 20:00&#10;Brandon Moreno x Brandon Royval"></textarea>
+      <div class="row" style="margin-top:8px"><button class="ghost" id="bulkPrev">👀 Conferir</button><button id="bulkGo" hidden>Criar todos</button></div>
+      <div class="muted" id="bulkOut"></div>
     </details>
-
-    <nav class="topnav"><a href="#evSec">📋 Eventos</a><a href="#newSec">➕ Novo</a><a href="#bulkSec">📥 Vários</a><a href="#cfgSec">⚙️ Ajustes</a><a href="#repSec">🚩 Denúncias</a></nav>
-    <h2 id="evSec">📋 Eventos</h2>
-    <div id="events"><p class="muted">Carregando…</p></div>
-
-    <details class="card newbox" id="newSec"><summary><b>➕ Novo evento</b> <span class="muted">criar o próximo card</span></summary>
+    <details class="card newbox" id="newSec" open><summary><b>➕ Novo evento</b> <span class="muted">criar o próximo card</span></summary>
       <label>Nome do evento</label><input id="evName" placeholder="UFC 330: Poatan x Ankalaev">
       <div class="row">
         <div class="grow"><label>Data do evento</label><input id="evDate" type="date"></div>
@@ -170,15 +204,9 @@
       <p class="muted">Fotos dos lutadores, arte do evento e horários em sequência você coloca no card do evento, depois de criar.</p>
       <div class="row" style="margin-top:10px"><button id="btnCreate">Criar evento</button></div>
     </details>
-
-    <details class="card newbox" id="bulkSec"><summary><b>📥 Vários eventos de uma vez</b> <span class="muted">cole a lista que o Claude te mandar</span></summary>
-      <p class="muted">Um evento por bloco. A 1ª linha do bloco começa com <b>===</b>: nome | data (AAAA-MM-DD) | hora que os palpites fecham (Brasília). Depois, uma luta por linha (a principal primeiro), com horário opcional no fim.</p>
-      <textarea id="bulkTxt" rows="8" spellcheck="false" placeholder="=== UFC 331: Topuria x Holloway | 2026-11-29 | 23:00&#10;Ilia Topuria x Max Holloway - 01:00&#10;Jéssica Andrade x Zhang Weili - 00:30&#10;&#10;=== UFC Fight Night: Moreno x Royval | 2026-12-06 | 20:00&#10;Brandon Moreno x Brandon Royval"></textarea>
-      <div class="row" style="margin-top:8px"><button class="ghost" id="bulkPrev">👀 Conferir</button><button id="bulkGo" hidden>Criar todos</button></div>
-      <div class="muted" id="bulkOut"></div>
-    </details>
-
-    <h2 id="cfgSec">⚙️ Ajustes ao vivo (motor de regras)</h2>
+    </div>
+    <div class="pane" data-pane="ranking" hidden><h2>🏆 Ranking</h2><div id="rankPane"><p class="muted">Carregando…</p></div></div>
+    <div class="pane" data-pane="ajustes" hidden><h2>⚙️ Ajustes ao vivo (motor de regras)</h2>
     <div class="card" id="cfgBox">
       <p class="muted">Muda o jogo de todo mundo sem lançar versão nova. Cada celular busca isto no máximo a cada 12 horas. O jogo tem travas: número fora do limite é cortado.</p>
       <div class="row">
@@ -207,9 +235,16 @@
         <p class="muted">Formato: { "version", "defaults": {...}, "rules": [ { "id", "priority", "start", "end", "when": {"signal":"platform","op":"eq","value":"android"}, "set": {"ads.perDay": 2} } ] }. Sinais: platform, lang, app_version, weekday, local_hour.</p></details>
       <div class="row" style="margin-top:10px"><button id="btnCfg">Salvar ajustes</button><span class="muted grow" id="cfgMsg"></span></div>
     </div>
-
-    <h2 id="repSec">🚩 Denúncias da Arena</h2>
-    <div id="reports"><p class="muted">Carregando…</p></div>
+    </div>
+    <div class="pane" data-pane="denuncias" hidden><h2>🚩 Denúncias da Arena</h2><div id="reports"><p class="muted">Carregando…</p></div></div>
+    <div class="pane" data-pane="gemini" hidden><h2>🔑 Chaves do Gemini</h2>
+    <details class="card" id="gkBox" open><summary><b>🔑 Chaves do Gemini</b> <span class="muted" id="gkInfo"></span></summary>
+      <p class="muted">Usadas só pra ler os prints dos resultados. Ficam guardadas apenas neste navegador, neste PC (não vão pro Firebase nem pro código). Uma por linha: se a 1ª der erro ou acabar a cota, o admin tenta a próxima.</p>
+      <textarea id="gkKeys" rows="3" spellcheck="false" autocomplete="off" style="width:100%;font-family:monospace;-webkit-text-security:disc" placeholder="Cole a chave aqui (uma por linha)"></textarea>
+      <label>Modelos, em ordem de tentativa</label><input id="gkModels" spellcheck="false" style="width:100%">
+      <div class="row" style="margin-top:8px"><button id="gkSave">Salvar chaves</button><button class="ghost" id="gkShow">Mostrar/ocultar</button><button class="ghost" id="gkDel">Apagar deste PC</button></div>
+    </details>
+    </div>
   </section>
 </main>
 
@@ -345,7 +380,7 @@ $('btnLogin').onclick = async () => { say('Entrando…'); try { await auth.signI
 $('btnOut').onclick = () => auth.signOut();
 auth.onAuthStateChanged(u => {
   const ok = u && !u.isAnonymous; $('login').hidden = !!ok; $('app').hidden = !ok;
-  if (ok) { $('who').textContent = 'Logado como ' + u.email; loadEvents(); loadReports(); loadCfg(); }
+  if (ok) { $('who').textContent = 'Logado como ' + u.email; loadEvents(); loadReports(); loadCfg(); go(lsGet('adm_tab', 'inicio')); }
 });
 
 // horário de Brasília (UTC-3) → milissegundos
@@ -410,6 +445,62 @@ $('bulkGo').onclick = async () => {
   $('bulkGo').disabled = false;
 };
 
+// ---------- painel em abas ----------
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
+// cada card de evento lembra se ficou aberto ou fechado; na primeira vez, só o próximo evento em andamento abre
+let firstOpen = null;
+const isOpen = (id, ev) => { const m = lsGet('adm_open', {}); if (id in m) return m[id]; return ev.status !== 'done' && id === firstOpen; };
+const setOpen = (id, v) => { const m = lsGet('adm_open', {}); m[id] = v; lsSet('adm_open', m); };
+function go(tab) {
+  if (!document.querySelector(`[data-pane="${tab}"]`)) tab = 'inicio';
+  document.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== tab; });
+  document.querySelectorAll('#tabs [data-go]').forEach(b => b.classList.toggle('on', b.dataset.go === tab));
+  lsSet('adm_tab', tab); window.scrollTo({ top: 0 });
+  if (tab === 'inicio') loadHome(); if (tab === 'ranking') loadRank();
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { e.preventDefault(); go(b.dataset.go); if (b.dataset.ev) openEv(b.dataset.ev); } });
+function openEv(id) { setOpen(id, true); const show = () => { const c = document.querySelector(`.evcard[data-id="${id}"]`); if (!c) return false; c.classList.remove('collapsed'); c.scrollIntoView({ behavior: 'smooth', block: 'start' }); return true; }; if (!show()) setTimeout(show, 700); }
+const cdown = ms => { if (ms <= 0) return 'fechado'; const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4); return (d ? d + 'd ' : '') + h + 'h ' + m + 'min'; };
+const stOf = e => { const F = e.fights || []; if (e.status === 'done') return 'done'; if ((e.lock || 0) > Date.now() && e.status === 'open') return 'up'; if (F.length && F.every(f => f.w)) return 'done'; return 'live'; };
+const podiumH = L => { const t3 = (L || []).slice(0, 3); return t3.length ? `<div class="pod">${[1, 0, 2].map(i => t3[i] ? `<div class="pd p${i + 1}"><span class="md">${['🥇', '🥈', '🥉'][i]}</span><b>${esc(t3[i].name)}</b><small>${t3[i].pts} pts</small></div>` : '<div></div>').join('')}</div>` : '<p class="muted">Ainda sem ranking.</p>'; };
+async function loadHome() {
+  const box = $('home');
+  try {
+    const s = await db.collection('bolao').orderBy('date', 'desc').limit(12).get(); const E = s.docs.map(d => Object.assign({ _id: d.id }, d.data()));
+    const up = E.filter(e => stOf(e) === 'up').sort((a, b) => a.lock - b.lock), live = E.filter(e => stOf(e) === 'live'), done = E.filter(e => stOf(e) === 'done').sort((a, b) => (b.date || 0) - (a.date || 0));
+    const nx = live[0] || up[0], last = done[0];
+    let np = '—'; if (nx) { try { np = (await db.collection('bolao').doc(nx._id).collection('picks').get()).size; } catch (e) { } }
+    let top = null; if (last) { try { const t = await db.collection('bolao').doc(last._id).collection('rank').doc('top').get(); top = t.exists ? t.data() : null; } catch (e) { } }
+    const season = new Date().toISOString().slice(0, 7); let se = null; try { const d = await db.collection('bolao_season').doc(season).get(); se = d.exists ? d.data() : null; } catch (e) { }
+    const nr = nx ? (nx.fights || []).filter(f => f.w).length : 0;
+    box.innerHTML = `<div class="kpis"><div><b>${up.length}</b><small>próximos</small></div><div><b>${live.length}</b><small>rolando agora</small></div><div><b>${np}</b><small>palpites no ${nx ? 'próximo' : '—'}</small></div><div><b>${se ? se.total : 0}</b><small>jogadores no mês</small></div></div>
+      ${nx ? `<div class="hero ${stOf(nx)}"><span class="pill ${stOf(nx) === 'live' ? 'st-closed' : 'st-open'}">${stOf(nx) === 'live' ? '🔴 Rolando agora' : '⏳ Próximo evento'}</span><h3>${esc(nx.name)}</h3>
+        <p class="muted">${esc(fmtDay(nx.date))} · ${(nx.fights || []).length} lutas · ${stOf(nx) === 'live' ? `<b>${nr} de ${(nx.fights || []).length}</b> resultados lançados` : `fecha em <b>${cdown(nx.lock - Date.now())}</b>`} · <b>${np}</b> palpites</p>
+        <div class="row"><button data-go="eventos" data-ev="${nx._id}">${stOf(nx) === 'live' ? '🏁 Lançar resultados' : '✏️ Abrir o card'}</button><button class="ghost" data-go="criar">➕ Criar outro evento</button></div></div>` : `<div class="hero"><h3>Nenhum evento aberto</h3><p class="muted">Crie o próximo card pra galera palpitar.</p><button data-go="criar">➕ Criar evento</button></div>`}
+      ${up.length > (live.length ? 0 : 1) ? `<h2>⏳ Na fila</h2>${up.slice(live.length ? 0 : 1).map(e => `<button class="evline" data-go="eventos" data-ev="${e._id}"><span class="cal"><b>${new Date(e.date).getDate()}</b><small>${new Date(e.date).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</small></span><span class="grow"><b>${esc(e.name)}</b><small class="muted">${(e.fights || []).length} lutas · fecha em ${cdown(e.lock - Date.now())}</small></span><i>›</i></button>`).join('')}` : ''}
+      ${last ? `<h2>✅ Último encerrado</h2><div class="card"><b>${esc(last.name)}</b> <span class="muted">· ${esc(fmtDay(last.date))} · ${top ? top.total : 0} jogadores</span>${podiumH(top && top.list)}<div class="row"><button class="ghost" data-go="ranking">🏆 Ver ranking completo</button><button class="ghost" data-go="eventos" data-ev="${last._id}">Abrir evento</button></div></div>` : ''}
+      <h2>⚡ Atalhos</h2><div class="quick"><button data-go="criar"><i>📥</i>Vários eventos</button><button data-go="ranking"><i>🏆</i>Rankings</button><button data-go="ajustes"><i>📣</i>Aviso no jogo</button><button data-go="denuncias"><i>🚩</i>Denúncias</button></div>`;
+  } catch (e) { box.innerHTML = '<p class="muted">Erro ao carregar: ' + esc(e.message) + '</p>'; }
+}
+// ranking: escolhe evento, mês ou geral e vê a tabela inteira (até 100)
+let rkSel = null;
+async function loadRank() {
+  const box = $('rankPane');
+  try {
+    const s = await db.collection('bolao').orderBy('date', 'desc').limit(20).get(); const E = s.docs.map(d => Object.assign({ _id: d.id }, d.data())).filter(e => (e.fights || []).some(f => f.w));
+    const season = new Date().toISOString().slice(0, 7); if (!rkSel) rkSel = E[0] ? 'ev:' + E[0]._id : 'mes';
+    const opts = [['mes', '🗓️ Mês atual'], ['geral', '🌎 Geral']].concat(E.map(e => ['ev:' + e._id, '🥊 ' + e.name]));
+    let L = [], total = 0, title = '';
+    if (rkSel.startsWith('ev:')) { const id = rkSel.slice(3); const t = await db.collection('bolao').doc(id).collection('rank').doc('top').get(); const d = t.exists ? t.data() : {}; L = d.list || []; total = d.total || L.length; title = (E.find(e => e._id === id) || {}).name || ''; }
+    else { const d = await db.collection('bolao_season').doc(rkSel === 'mes' ? season : 'all').get(); const x = d.exists ? d.data() : {}; L = x.list || []; total = x.total || L.length; title = rkSel === 'mes' ? (x.label || season) : 'Geral (desde o começo)'; }
+    box.innerHTML = `<div class="rkbar">${opts.map(([k, l]) => `<button class="chip${k === rkSel ? ' on' : ''}" data-rk="${esc(k)}">${esc(l)}</button>`).join('')}</div>
+      <div class="card"><div class="row"><b class="grow" style="font-size:18px">${esc(title)}</b><span class="muted">${total} jogadores</span></div>${podiumH(L)}
+      <table class="rktab"><tbody>${L.slice(3).map((r, i) => `<tr><td class="pos">${r.pos || i + 4}º</td><td>${esc(r.name)} ${r.cc ? `<span class="muted">${esc(r.cc)}</span>` : ''}</td><td class="pts">${r.pts} pts</td></tr>`).join('')}</tbody></table></div>`;
+    box.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => { rkSel = b.dataset.rk; loadRank(); });
+  } catch (e) { box.innerHTML = '<p class="muted">Erro ao carregar: ' + esc(e.message) + '</p>'; }
+}
+
 async function loadEvents() {
   const box = $('events');
   try {
@@ -439,7 +530,7 @@ async function loadEvents() {
     }
     // em andamento primeiro (o mais próximo em cima); encerrados viram uma linha compacta que abre num clique
     const docs = s.docs.map(d => ({ id: d.id, ev: d.data() }));
-    const act = docs.filter(x => x.ev.status !== 'done').sort((a, b) => (a.ev.date || 0) - (b.ev.date || 0));
+    const act = docs.filter(x => x.ev.status !== 'done').sort((a, b) => (a.ev.date || 0) - (b.ev.date || 0)); firstOpen = act[0] ? act[0].id : null;
     const fin = docs.filter(x => x.ev.status === 'done');
     if (act.length) act.forEach(x => box.appendChild(eventCard(x.id, x.ev)));
     else { const e = document.createElement('div'); e.className = 'card empty'; e.innerHTML = '<b>Nenhum evento em andamento.</b><p class="muted">Crie o próximo card em ➕ Novo evento.</p>'; box.appendChild(e); }
@@ -447,7 +538,7 @@ async function loadEvents() {
       const d = document.createElement('details'); d.className = 'donebox'; d.innerHTML = `<summary><span>✅ Encerrados</span><span class="cnt">${fin.length}</span><span class="muted grow" style="text-align:right">clique pra ver</span></summary>`;
       fin.forEach(x => { const r = document.createElement('div'); r.className = 'evrow'; const F = x.ev.fights || [];
         r.innerHTML = `<div class="evrow-i"><b>${esc(x.ev.name)}</b><span class="muted">${esc(fmtDay(x.ev.date))} · ${F.length} lutas · ${F.filter(isRes).length} com resultado${F.some(f => f.w === 'd') ? ' · 🤝 teve empate' : ''}</span></div><button class="ghost sm">Abrir</button>`;
-        r.querySelector('button').onclick = () => { const c = eventCard(x.id, x.ev); c.classList.add('opened'); r.replaceWith(c); };
+        r.querySelector('button').onclick = () => { setOpen(x.id, true); const c = eventCard(x.id, x.ev); c.classList.add('opened'); r.replaceWith(c); };
         d.appendChild(r); });
       box.appendChild(d);
     }
@@ -457,8 +548,9 @@ function eventCard(id, ev) {
   const el = document.createElement('div'); el.className = 'card';
   const F0 = ev.fights || [], nr = F0.filter(f => f.w).length, stt = ev.status || 'open';
   const pill = { open: ['🟢', 'Aberto', 'st-open'], closed: ['🔒', 'Fechado', 'st-closed'], done: ['✅', 'Encerrado', 'st-done'] }[stt] || ['🟢', 'Aberto', 'st-open'];
-  el.className = 'card evcard ' + pill[2];
-  el.innerHTML = `<div class="evhead"><div class="grow"><span class="pill ${pill[2]}">${pill[0]} ${pill[1]}</span><span class="muted"> ${esc(fmtDay(ev.date))}</span><h3>${esc(ev.name)}</h3>
+  el.className = 'card evcard ' + pill[2]; el.dataset.id = id;
+  if (!isOpen(id, ev)) el.classList.add('collapsed');
+  el.innerHTML = `<div class="evhead" data-toggle title="Clique pra abrir ou fechar"><span class="chev">▾</span><div class="grow"><span class="pill ${pill[2]}">${pill[0]} ${pill[1]}</span><span class="muted"> ${esc(fmtDay(ev.date))}</span><h3>${esc(ev.name)}</h3>
       <div class="progrow"><span class="muted">🏁 Resultados lançados: <b>${nr} de ${F0.length}</b> lutas${nr === 0 ? ' (o evento ainda não começou)' : nr === F0.length ? ' ✅ todas' : ''}</span><div class="prog" title="Quantas lutas já têm vencedor marcado"><i style="width:${F0.length ? Math.round(100 * nr / F0.length) : 0}%"></i></div></div></div>
       <label class="stsel"><span>Status</span><select data-k="status" style="width:auto"><option value="open">Aberto</option><option value="closed">Fechado</option><option value="done">Encerrado</option></select></label></div>
     <p class="muted donehint" data-donehint hidden>✅ Ao salvar como <b>Encerrado</b>, este evento sai daqui e vai pra lista compacta de Encerrados (os jogadores veem só o resumo).</p>
@@ -523,6 +615,7 @@ function eventCard(id, ev) {
     el.querySelectorAll('[data-face]').forEach(d => { const s = img.fights[+d.dataset.i]['img' + d.dataset.face.toUpperCase()]; d.style.backgroundImage = s ? `url("${s}")` : ''; d.classList.toggle('has', !!s); });
   };
   paint(); paintW();
+  el.querySelector('[data-toggle]').addEventListener('click', e => { if (e.target.closest('select, input, label, button')) return; const c = el.classList.toggle('collapsed'); setOpen(id, !c); });
   // botões visuais: cada um só troca o valor do select escondido (o Salvar continua lendo os selects)
   el.querySelectorAll('.fight.vis').forEach(row => row.addEventListener('click', e => {
     const b = e.target.closest('[data-set]'); if (!b || b.disabled) return; const i = row.dataset.fi, k = b.dataset.set; const sel = el.querySelector(`[data-i="${i}"][data-k="${k}"]`); if (!sel) return;
