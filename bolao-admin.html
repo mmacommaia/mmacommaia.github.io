@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Admin do Bolão · Rumo à Glória</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root { --bg: #0f1a26; --card: #16263a; --ink: #e9eef3; --muted: #9fb0c2; --gold: #e8b44a; --red: #e0605a; --line: #2a3f57; }
   * { box-sizing: border-box; }
@@ -48,44 +49,89 @@
   .crop canvas.body { border-radius: 8px; border-color: var(--line); }
   input[type=range] { padding: 0; }
 
-  /* v4.74: visual novo */
-  body { background: radial-gradient(1200px 500px at 50% -200px, #1f3550 0%, var(--bg) 60%) fixed, var(--bg); }
-  .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 6px; }
-  .brand .logo { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; font-size: 26px; background: linear-gradient(135deg, #3a2a0a, #e8b44a); box-shadow: 0 6px 18px rgba(232,180,74,.25); }
-  .brand h1 { margin: 0; } .brand p { margin: 0; }
-  .topnav { position: sticky; top: 0; z-index: 5; display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; margin: 4px 0 0; background: linear-gradient(var(--bg) 70%, transparent); }
-  .topnav a { flex: none; color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 700; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: #13233a; }
-  .topnav a:hover { border-color: var(--gold); }
-  h2 { scroll-margin-top: 60px; }
-  .card { box-shadow: 0 8px 22px rgba(0,0,0,.18); }
-  .evcard { border-left: 4px solid #3fbf7f; transition: opacity .5s, transform .5s; }
-  .evcard.st-closed { border-left-color: #f2c94c; } .evcard.st-done { border-left-color: #6b7c90; }
-  .evcard.closing { opacity: .25; transform: scale(.98); }
-  .evhead { display: flex; gap: 10px; align-items: flex-start; }
-  .evhead h3 { margin: 4px 0 6px; font-size: 18px; line-height: 1.25; }
-  .pill { display: inline-block; font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px; }
-  .pill.st-open { background: rgba(63,191,127,.15); color: #6fe0a5; } .pill.st-closed { background: rgba(242,201,76,.15); color: #f2c94c; } .pill.st-done { background: rgba(159,176,194,.15); color: var(--muted); }
-  .prog { height: 6px; border-radius: 3px; background: #0b141e; overflow: hidden; max-width: 260px; margin-bottom: 2px; } .prog i { display: block; height: 100%; background: linear-gradient(90deg, #3fbf7f, var(--gold)); }
-  .stsel { margin: 0; display: grid; gap: 2px; } .stsel span { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-  .donehint { background: rgba(159,176,194,.1); border-radius: 8px; padding: 8px 10px; }
-  .fight { border-radius: 10px; padding: 10px 8px; margin: 6px 0; border: 1px solid transparent; border-top: 1px solid var(--line); }
-  .fight.has-w { background: rgba(63,191,127,.06); border-color: rgba(63,191,127,.25); }
-  .fight[data-w="a"] [data-face="b"], .fight[data-w="b"] [data-face="a"] { opacity: .35; filter: grayscale(1); }
-  .fight[data-w="a"] [data-face="a"], .fight[data-w="b"] [data-face="b"] { border: 3px solid var(--gold); box-shadow: 0 0 12px rgba(232,180,74,.5); }
-  .fight[data-w="d"] { background: rgba(232,180,74,.07); border-color: rgba(232,180,74,.35); }
-  .fight[data-w="nc"] { opacity: .6; }
-  select[data-k="w"] { font-weight: 700; }
-  .donebox { margin: 14px 0; border: 1px solid var(--line); border-radius: 12px; background: #13233a; }
-  .donebox > summary { display: flex; gap: 8px; align-items: center; padding: 12px 14px; cursor: pointer; font-weight: 800; list-style: none; }
+  /* v4.74: visual de app (não de formulário) */
+  :root { --bg: #0a111b; --card: #121d2b; --card2: #172638; --ink: #eef2f6; --muted: #8fa1b5; --gold: #f0b942; --gold2: #ffd77a; --red: #e45a52; --green: #3fcf8e; --line: #22344a; }
+  body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: radial-gradient(900px 420px at 50% -120px, rgba(240,185,66,.16), transparent 70%), radial-gradient(1200px 600px at 100% 0, #13263d 0, transparent 60%), var(--bg); background-attachment: fixed; }
+  main { max-width: 860px; }
+  h1, h2, h3, .fname, .vsx, .fno, .brand h1 { font-family: Oswald, Impact, "Arial Narrow", sans-serif; letter-spacing: .01em; }
+  h2 { font-size: 22px; text-transform: uppercase; letter-spacing: .04em; margin: 28px 0 10px; display: flex; align-items: center; gap: 8px; scroll-margin-top: 64px; }
+  h2::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
+  .brand { display: flex; gap: 14px; align-items: center; padding: 18px; margin: -4px 0 10px; border-radius: 20px; background: linear-gradient(120deg, #2a1f08 0%, #15212f 55%); border: 1px solid rgba(240,185,66,.3); box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+  .brand .logo { width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; font-size: 30px; background: linear-gradient(135deg, var(--gold2), #b07a12); box-shadow: 0 8px 22px rgba(240,185,66,.35); }
+  .brand h1 { margin: 0; font-size: 28px; text-transform: uppercase; color: var(--gold2); } .brand p { margin: 2px 0 0; }
+  .topnav { position: sticky; top: 0; z-index: 5; display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; background: linear-gradient(var(--bg) 75%, transparent); }
+  .topnav a { flex: none; color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); }
+  .topnav a:hover { border-color: var(--gold); color: var(--gold2); }
+  .card { background: linear-gradient(180deg, var(--card2), var(--card)); border-radius: 18px; border: 1px solid var(--line); box-shadow: 0 14px 34px rgba(0,0,0,.28); padding: 16px; }
+  input, select, textarea { border-radius: 10px; background: #0b1520; border-color: #263a52; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid rgba(240,185,66,.5); border-color: var(--gold); }
+  button { border-radius: 12px; transition: transform .08s, filter .15s, background .15s; } button:active { transform: scale(.97); } button:hover { filter: brightness(1.08); }
+  button.ghost { background: #182a3e; border-color: #2a4260; }
+  button.big { padding: 12px 24px; font-size: 16px; box-shadow: 0 8px 20px rgba(240,185,66,.25); }
+  .dangerx { color: #ff8e86 !important; border-color: rgba(228,90,82,.4) !important; background: transparent !important; }
+  /* card do evento */
+  .evcard { padding: 0; overflow: hidden; border-left: 0; transition: opacity .5s, transform .5s; }
+  .evcard.closing { opacity: .2; transform: scale(.98); }
+  .evhead { position: relative; display: flex; gap: 12px; align-items: flex-start; padding: 18px 18px 14px; background: linear-gradient(120deg, rgba(63,207,142,.14), transparent 60%); border-bottom: 1px solid var(--line); }
+  .evcard.st-closed .evhead { background: linear-gradient(120deg, rgba(240,185,66,.16), transparent 60%); } .evcard.st-done .evhead { background: linear-gradient(120deg, rgba(143,161,181,.14), transparent 60%); }
+  .evhead h3 { margin: 6px 0 8px; font-size: 26px; line-height: 1.1; text-transform: uppercase; }
+  .evcard > *:not(.evhead):not(.fights):not(.actbar) { margin-left: 16px; margin-right: 16px; }
+  .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
+  .pill.st-open { background: rgba(63,207,142,.16); color: #74e6b0; } .pill.st-closed { background: rgba(240,185,66,.16); color: var(--gold2); } .pill.st-done { background: rgba(143,161,181,.16); color: var(--muted); }
+  .progrow { display: grid; gap: 5px; max-width: 380px; } .prog { height: 8px; border-radius: 4px; background: #24384f; overflow: hidden; } .prog i { display: block; height: 100%; background: linear-gradient(90deg, var(--green), var(--gold)); }
+  .stsel { margin: 0; display: grid; gap: 3px; } .stsel span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+  .stsel select { font-weight: 800; }
+  .poster { border-radius: 14px; margin: 12px 16px 0; width: calc(100% - 32px); }
+  .evinfo { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); margin-top: 12px !important; } .evinfo b { color: var(--ink); }
+  .evset { margin-top: 10px !important; border: 1px dashed var(--line); border-radius: 12px; padding: 8px 12px; } .evset > summary { cursor: pointer; font-weight: 700; } .evset[open] { background: rgba(255,255,255,.02); }
+  .donehint { background: rgba(143,161,181,.12); border-radius: 10px; padding: 9px 12px; margin-top: 10px !important; }
+  /* lutas */
+  .fights { display: grid; gap: 12px; padding: 14px 16px 4px; }
+  .fight.vis { display: block; position: relative; padding: 12px; margin: 0; border-radius: 16px; border: 1px solid var(--line); background: linear-gradient(180deg, #13212f, #0f1925); }
+  .fight.vis:first-child { border-color: rgba(240,185,66,.45); background: linear-gradient(180deg, rgba(240,185,66,.09), #0f1925 60%); }
+  .fight.vis.has-w { border-color: rgba(63,207,142,.45); }
+  .fight.vis[data-w="d"] { border-color: rgba(240,185,66,.6); } .fight.vis[data-w="nc"] { opacity: .55; }
+  .ftop { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .fno { font-size: 14px; text-transform: uppercase; color: var(--gold2); margin-right: auto; letter-spacing: .05em; }
+  .chip { background: #1a2b3f; color: var(--ink); border: 1px solid #2a4260; padding: 6px 11px; font-size: 13px; font-weight: 700; border-radius: 999px; }
+  .chip.sm { padding: 5px 9px; font-size: 12.5px; }
+  .chip.on { background: var(--gold); color: #1a1205; border-color: var(--gold); box-shadow: 0 0 12px rgba(240,185,66,.35); }
+  .chip:disabled { opacity: .3; cursor: not-allowed; filter: none; }
+  label.chip.tg { display: inline-flex; gap: 5px; align-items: center; margin: 0; cursor: pointer; color: var(--ink); } label.chip.tg input { width: auto; margin: 0; accent-color: var(--gold); }
+  .seg { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+  select.mini { width: auto; padding: 6px 8px; font-size: 13px; border-radius: 999px; }
+  .tm { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; } .tm .time { width: 100px !important; padding: 5px 8px; border-radius: 999px; }
+  .duo { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: start; }
+  .side { display: grid; justify-items: center; gap: 6px; text-align: center; padding: 8px 4px; border-radius: 14px; transition: background .2s; }
+  .side .face { width: 92px; height: 92px; font-size: 24px; }
+  .fname { font-size: 19px; line-height: 1.1; text-transform: uppercase; }
+  .sbtn { display: flex; gap: 6px; }
+  .wbtn { background: #1a2b3f; color: var(--ink); border: 1px solid #2a4260; padding: 7px 12px; font-size: 13px; }
+  .wbtn.on { background: linear-gradient(135deg, var(--gold2), var(--gold)); color: #1a1205; border-color: var(--gold); box-shadow: 0 0 16px rgba(240,185,66,.4); }
+  .dbtn { background: transparent; border: 1px dashed #36506e; padding: 7px 10px; font-size: 14px; } .dbtn.on { background: rgba(124,92,255,.25); border: 1px solid #9b84ff; }
+  .mid { display: grid; gap: 6px; justify-items: center; align-content: center; padding-top: 26px; }
+  .vsx { font-size: 30px; color: var(--gold); text-shadow: 0 0 14px rgba(240,185,66,.4); }
+  .xbtn { background: transparent; color: var(--muted); border: 1px solid #2a4260; padding: 5px 10px; font-size: 12px; white-space: nowrap; }
+  .xbtn.on { color: #1a1205; background: var(--gold); border-color: var(--gold); }
+  .fight[data-w="a"] .side[data-side="a"], .fight[data-w="b"] .side[data-side="b"] { background: rgba(240,185,66,.08); }
+  .fight[data-w="a"] .side[data-side="b"], .fight[data-w="b"] .side[data-side="a"] { opacity: .45; }
+  .fight[data-w="a"] [data-face="a"], .fight[data-w="b"] [data-face="b"] { border: 3px solid var(--gold); box-shadow: 0 0 18px rgba(240,185,66,.55); }
+  .how { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #22344a; }
+  .pastecta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px !important; }
+  .actbar { position: sticky; bottom: 0; display: flex; gap: 8px; align-items: center; padding: 12px 16px; margin-top: 12px; background: linear-gradient(180deg, rgba(18,29,43,.6), #0f1925 40%); border-top: 1px solid var(--line); backdrop-filter: blur(6px); }
+  .unsaved { margin-top: 8px !important; font-weight: 700; }
+  [data-out] { margin: 0 16px 12px !important; }
+  .donebox { margin: 14px 0; border: 1px solid var(--line); border-radius: 16px; background: var(--card); overflow: hidden; }
+  .donebox > summary { display: flex; gap: 8px; align-items: center; padding: 14px 16px; cursor: pointer; font-weight: 800; list-style: none; }
   .donebox > summary::-webkit-details-marker { display: none; }
   .donebox .cnt { background: var(--line); border-radius: 999px; padding: 0 9px; font-size: 13px; }
-  .evrow { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); }
+  .evrow { display: flex; gap: 10px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line); }
   .evrow-i { flex: 1; min-width: 0; display: grid; } .evrow-i b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   button.sm { padding: 6px 12px; font-size: 13px; }
   .donebox .evcard { margin: 8px; }
   .newbox > summary { cursor: pointer; padding: 2px 0; } .newbox[open] > summary { margin-bottom: 8px; }
   .empty { text-align: center; }
-  @media (max-width: 520px) { .evhead { flex-direction: column; } }
+  @media (max-width: 560px) { .evhead { flex-direction: column; } .side .face { width: 70px; height: 70px; } .fname { font-size: 16px; } .mid { padding-top: 14px; } .xbtn { padding: 4px 7px; font-size: 11px; } .actbar { flex-wrap: wrap; } }
 </style>
 </head>
 <body>
@@ -413,24 +459,39 @@ function eventCard(id, ev) {
   const pill = { open: ['🟢', 'Aberto', 'st-open'], closed: ['🔒', 'Fechado', 'st-closed'], done: ['✅', 'Encerrado', 'st-done'] }[stt] || ['🟢', 'Aberto', 'st-open'];
   el.className = 'card evcard ' + pill[2];
   el.innerHTML = `<div class="evhead"><div class="grow"><span class="pill ${pill[2]}">${pill[0]} ${pill[1]}</span><span class="muted"> ${esc(fmtDay(ev.date))}</span><h3>${esc(ev.name)}</h3>
-      <div class="prog" title="${nr} de ${F0.length} lutas com resultado"><i style="width:${F0.length ? Math.round(100 * nr / F0.length) : 0}%"></i></div><span class="muted">${nr}/${F0.length} resultados</span></div>
+      <div class="progrow"><span class="muted">🏁 Resultados lançados: <b>${nr} de ${F0.length}</b> lutas${nr === 0 ? ' (o evento ainda não começou)' : nr === F0.length ? ' ✅ todas' : ''}</span><div class="prog" title="Quantas lutas já têm vencedor marcado"><i style="width:${F0.length ? Math.round(100 * nr / F0.length) : 0}%"></i></div></div></div>
       <label class="stsel"><span>Status</span><select data-k="status" style="width:auto"><option value="open">Aberto</option><option value="closed">Fechado</option><option value="done">Encerrado</option></select></label></div>
     <p class="muted donehint" data-donehint hidden>✅ Ao salvar como <b>Encerrado</b>, este evento sai daqui e vai pra lista compacta de Encerrados (os jogadores veem só o resumo).</p>
-    <p class="muted">Palpites fecham: ${esc(fmtBrt(ev.lock))}</p>
+    <img class="poster" data-poster alt="" hidden>
+    <div class="evinfo"><span>🔒 Palpites fecham <b>${esc(fmtBrt(ev.lock))}</b></span><span>🥊 ${F0.length} lutas</span></div>
+    <details class="evset"><summary>⚙️ Ajustes do card <span class="muted">arte, horários em sequência, imagem dos stories, prazo dos pontos</span></summary>
     <div class="row"><span class="muted">📸 Card principal (vai na imagem dos stories): as primeiras</span><input type="number" data-k="mc" min="1" max="15" value="${ev.mc || 5}" style="width:70px!important"><span class="muted">lutas</span></div>
     <div class="row"><span class="muted">⏳ Prometo os pontos em até</span><input type="number" data-k="resH" min="1" max="72" value="${ev.resH || 12}" style="width:70px!important"><span class="muted">horas depois da última luta (aparece pro jogador no app)</span></div>
-    <img class="poster" data-poster alt="" hidden>
     <div class="row"><button class="ghost" data-act="poster">🖼️ Arte do evento</button><button class="ghost" data-act="noposter" hidden>Tirar arte</button></div>
     <div class="row" style="margin-top:8px"><span class="muted">⏰ Horários em sequência: 1ª luta do card (a de baixo) às</span><input type="time" class="time" data-seq-start value="20:00"><span class="muted">a cada</span><input type="number" class="time" data-seq-gap value="30" min="5" step="5" style="width:70px!important"><span class="muted">min (lutas de 5 rounds: 40 min)</span><button class="ghost" data-act="seq">Preencher</button></div>
-    <div>${(ev.fights || []).map((f, i) => `<div class="fight"><div class="vs"><div class="face" data-face="a" data-i="${i}" title="Foto de ${esc(f.a)}">📷</div><b>${esc(f.a)} x ${esc(f.b)}</b><div class="face" data-face="b" data-i="${i}" title="Foto de ${esc(f.b)}">📷</div><input type="time" class="time" data-i="${i}" data-k="t" title="Horário (Brasília)"></div>
-      <label style="margin:0;display:flex;gap:4px;align-items:center"><input type="checkbox" data-i="${i}" data-k="main" style="width:auto"> ⭐ Principal</label>
-      <select data-i="${i}" data-k="cat"><option value="">Categoria…</option>${CATS.map(c => `<option>${c}</option>`).join('')}</select>
+    </details>
+    <div class="fights">${(ev.fights || []).map((f, i) => `<div class="fight vis" data-fi="${i}">
+      <div class="ftop"><span class="fno">${i === 0 ? '⭐ Luta principal' : i === 1 ? '⭐ Co-principal' : 'Luta ' + (i + 1)}</span>
+        <label class="chip tg"><input type="checkbox" data-i="${i}" data-k="main"> ⭐ Principal</label>
+        <span class="seg"><button type="button" class="chip" data-set="rounds" data-v="3">3R</button><button type="button" class="chip" data-set="rounds" data-v="5">5R</button></span>
+        <select class="mini" data-i="${i}" data-k="cat"><option value="">Categoria…</option>${CATS.map(c => `<option>${c}</option>`).join('')}</select>
+        <span class="tm" title="Horário da luta (Brasília): os palpites dela fecham nessa hora">🕐<input type="time" class="time" data-i="${i}" data-k="t"></span></div>
+      <div class="duo">
+        <div class="side" data-side="a"><div class="face" data-face="a" data-i="${i}" title="Foto de ${esc(f.a)}">📷</div><b class="fname">${esc(f.a)}</b>
+          <div class="sbtn"><button type="button" class="wbtn" data-set="w" data-v="a">🏆 Venceu</button><button type="button" class="dbtn" data-set="dog" data-v="a" title="Marcar como zebra (+2 pra quem acertar)">🐶</button></div></div>
+        <div class="mid"><span class="vsx">VS</span><button type="button" class="xbtn" data-set="w" data-v="d">🤝 Empate</button><button type="button" class="xbtn" data-set="w" data-v="nc">🚫 Cancelada</button></div>
+        <div class="side" data-side="b"><div class="face" data-face="b" data-i="${i}" title="Foto de ${esc(f.b)}">📷</div><b class="fname">${esc(f.b)}</b>
+          <div class="sbtn"><button type="button" class="wbtn" data-set="w" data-v="b">🏆 Venceu</button><button type="button" class="dbtn" data-set="dog" data-v="b" title="Marcar como zebra (+2 pra quem acertar)">🐶</button></div></div>
+      </div>
+      <div class="how"><span class="seg">${Object.entries({ ko: '👊 Nocaute', sub: '🔒 Finalização', dec: '⚖️ Decisão' }).map(([k, v]) => `<button type="button" class="chip" data-set="m" data-v="${k}">${v}</button>`).join('')}</span>
+        <span class="seg rds">${[1, 2, 3, 4, 5].map(r => `<button type="button" class="chip sm" data-set="r" data-v="${r}">R${r}</button>`).join('')}</span></div>
+      <div class="hsel" hidden>
       <select data-i="${i}" data-k="rounds"><option value="3">3 rounds</option><option value="5">5 rounds</option></select>
       <select data-i="${i}" data-k="dog"><option value="">Zebra: nenhuma</option><option value="a">Zebra: ${esc(f.a)}</option><option value="b">Zebra: ${esc(f.b)}</option></select>
       <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option><option value="d">🤝 Empate</option><option value="nc">🚫 Cancelada / sem resultado</option></select>
       <select data-i="${i}" data-k="m"><option value="">Como…</option>${Object.entries(MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
-      <select data-i="${i}" data-k="r"><option value="">Round…</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">R${r}</option>`).join('')}</select></div>`).join('')}</div>
-    <div class="row" style="margin-top:10px"><button class="ghost" data-act="paste">📋 Colar resultados</button><span class="muted">copie a lista de resultados de qualquer site e eu preencho vencedor, método e round</span></div>
+      <select data-i="${i}" data-k="r"><option value="">Round…</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">R${r}</option>`).join('')}</select></div></div>`).join('')}</div>
+    <div class="pastecta"><button class="ghost" data-act="paste">📋 Lançar resultados de uma vez</button><span class="muted">print ou texto de qualquer site: preencho vencedor, método e round</span></div>
     <div data-pastebox hidden>
       <div data-drop tabindex="0" style="margin-top:6px;border:2px dashed #3a4a5a;border-radius:10px;padding:14px;text-align:center;cursor:pointer">
         <b>🖼️ Prints dos resultados</b><br><span class="muted">Ctrl+V aqui, arraste os arquivos ou clique pra escolher. Pode ser 1 print por luta ou 1 com o card todo (até 20).</span>
@@ -441,7 +502,7 @@ function eventCard(id, ev) {
       <textarea data-paste rows="5" placeholder="…ou cole aqui o texto com os resultados. Ex.: Ciryl Gane def. Josh Hokit via KO (punches), Round 2, 3:15" style="width:100%;margin-top:6px"></textarea>
       <div class="row"><button data-act="fill">Preencher lutas</button><button class="ghost" data-act="pasteclose">Fechar</button></div><div class="muted" data-pasteout></div></div>
     <div class="unsaved" data-unsaved hidden>● Mudanças não salvas — clique em Salvar.</div>
-    <div class="row" style="margin-top:10px"><button data-act="save">Salvar</button><button class="ghost" data-act="rank">Recalcular ranking</button><button class="red" data-act="del">Apagar</button></div>
+    <div class="actbar"><button class="big" data-act="save">💾 Salvar</button><button class="ghost" data-act="rank">🔄 Recalcular ranking</button><span class="grow"></span><button class="ghost dangerx" data-act="del">🗑️ Apagar evento</button></div>
     <div class="muted" data-out></div>`;
   el.querySelector('[data-k="status"]').value = ev.status || 'open';
   (ev.fights || []).forEach((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); q('w').value = f.w || ''; q('m').value = f.m || ''; q('r').value = f.r || ''; q('dog').value = f.dog || ''; q('rounds').value = String(f.rounds || 3); q('cat').value = f.cat || ''; q('main').checked = !!f.main; q('t').value = f.t || ''; });
@@ -452,14 +513,23 @@ function eventCard(id, ev) {
   if (ev.imgAt) imgRef(id).get().then(d => { const x = d.exists ? d.data() : null; if (!x) return; if (!img.poster) img.poster = x.poster || ''; (ev.fights || []).forEach((f, i) => { const g = x.f && x.f[f.id]; if (g) { if (!img.fights[i].imgA) img.fights[i].imgA = g.a || ''; if (!img.fights[i].imgB) img.fights[i].imgB = g.b || ''; } }); paint(); }).catch(() => { });
   el.addEventListener('change', e => { if (e.target.matches('select, input')) dirty(); if (e.target.matches('[data-k="status"]')) el.querySelector('[data-donehint]').hidden = !(e.target.value === 'done' && ev.status !== 'done'); if (e.target.matches('[data-k="w"]')) paintW(); });
   // vencedor escolhido: a foto ganha borda dourada, o outro fica apagado; empate deixa os dois iguais
-  const paintW = () => (ev.fights || []).forEach((f, i) => { const w = el.querySelector(`[data-i="${i}"][data-k="w"]`).value; const row = el.querySelector(`[data-i="${i}"][data-k="w"]`).closest('.fight');
-    row.classList.toggle('has-w', !!w); row.dataset.w = w; });
+  const paintW = () => (ev.fights || []).forEach((f, i) => { const v = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`).value; const w = v('w'), m = v('m'), rd = +v('rounds') || 3; const row = el.querySelector(`[data-i="${i}"][data-k="w"]`).closest('.fight');
+    row.classList.toggle('has-w', !!w); row.dataset.w = w;
+    row.querySelectorAll('[data-set]').forEach(b => { const k = b.dataset.set; b.classList.toggle('on', v(k) === b.dataset.v);
+      if (k === 'm') b.disabled = !(w === 'a' || w === 'b'); if (k === 'r') { b.disabled = !(m === 'ko' || m === 'sub'); b.hidden = +b.dataset.v > rd; } }); });
   const paint = () => {
     const p = el.querySelector('[data-poster]'); p.hidden = !img.poster; if (img.poster) p.src = img.poster;
     el.querySelector('[data-act="noposter"]').hidden = !img.poster;
     el.querySelectorAll('[data-face]').forEach(d => { const s = img.fights[+d.dataset.i]['img' + d.dataset.face.toUpperCase()]; d.style.backgroundImage = s ? `url("${s}")` : ''; d.classList.toggle('has', !!s); });
   };
   paint(); paintW();
+  // botões visuais: cada um só troca o valor do select escondido (o Salvar continua lendo os selects)
+  el.querySelectorAll('.fight.vis').forEach(row => row.addEventListener('click', e => {
+    const b = e.target.closest('[data-set]'); if (!b || b.disabled) return; const i = row.dataset.fi, k = b.dataset.set; const sel = el.querySelector(`[data-i="${i}"][data-k="${k}"]`); if (!sel) return;
+    sel.value = k === 'rounds' ? b.dataset.v : sel.value === b.dataset.v ? '' : b.dataset.v;
+    if (k === 'w' && (sel.value === 'd' || sel.value === 'nc' || !sel.value)) { el.querySelector(`[data-i="${i}"][data-k="m"]`).value = ''; el.querySelector(`[data-i="${i}"][data-k="r"]`).value = ''; }
+    if (k === 'm' && sel.value !== 'ko' && sel.value !== 'sub') el.querySelector(`[data-i="${i}"][data-k="r"]`).value = '';
+    sel.dispatchEvent(new Event('change', { bubbles: true })); paintW(); }));
   el.querySelectorAll('[data-face]').forEach(d => d.onclick = async () => {
     const i = +d.dataset.i, side = d.dataset.face.toUpperCase(), f = ev.fights[i], slot = img.fights[i];
     const res = await editFighter(side === 'A' ? f.a : f.b, !!slot['img' + side]);
@@ -492,7 +562,7 @@ function eventCard(id, ev) {
       if (!r) { miss.push(fs[i].a + ' x ' + fs[i].b); return; }
       q('w').value = r.w; q('m').value = r.w === 'nc' || r.w === 'd' ? '' : r.m || ''; q('r').value = r.w === 'nc' || r.w === 'd' || !r.r ? '' : String(r.r);
       ok++; box.classList.add(r.sure ? 'p-ok' : 'p-chk'); if (!r.sure) check.push(fs[i].a + ' x ' + fs[i].b); });
-    if (ok) dirty();
+    if (ok) { dirty(); paintW(); }
     po.innerHTML = `Preenchi ${ok} de ${fs.length} ${fs.length === 1 ? 'luta' : 'lutas'}.` + (check.length ? ` <b style="color:#f2c94c">Confira as amarelas:</b> ${check.map(esc).join(' · ')}.` : '') + (miss.length ? ` <b style="color:#e0605a">Não achei ${src}:</b> ${miss.map(esc).join(' · ')}.` : '') + (ok ? ' Depois clique em Salvar: o ranking é calculado junto.' : '');
   };
   el.querySelector('[data-act="fill"]').onclick = () => {
@@ -618,7 +688,7 @@ async function editFighter(name, hasFace) {
   try { srcIm = await loadImg(file); } catch (e) { say('Não abriu a imagem: ' + e.message); return; }
   const src = trim(srcIm);
   // chute inicial: rosto no topo, no meio, ocupando ~40% da largura do corpo
-  const z0 = Math.max(1, Math.min(5, Math.min(src.width, src.height) / (src.width * 0.42)));
+  const z0 = 1; // zoom sempre começa no mínimo (foto inteira); ajusta no controle se quiser
   cropState = { src, z: z0, x: 0.5, y: 0.02 };
   $('cz').value = cropState.z; $('cx').value = cropState.x; $('cy').value = cropState.y; $('cropTitle').textContent = 'Rosto de ' + name; drawCrop();
   const dlg = $('cropDlg'); dlg.showModal();
