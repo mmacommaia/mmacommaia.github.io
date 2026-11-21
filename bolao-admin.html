@@ -452,7 +452,16 @@ const parseFights = txt => {
   F.forEach((f, i) => { const o = odds[i]; if (f && o && o[0] !== o[1]) f.dog = o[0] > o[1] ? 'a' : 'b'; });
   return F;
 };
-const parseFights0 = txt => txt.split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => { let t = ''; const tm = l.match(/\s*[-–|@]\s*(\d{1,2})[:h](\d{2})\s*$/); if (tm) { t = tm[1].padStart(2, '0') + ':' + tm[2]; l = l.slice(0, tm.index); } const p = l.split(/\s+(?:x|vs\.?|X|VS)\s+/); if (p.length !== 2) return null; const o = { id: 'f' + (i + 1), a: p[0].trim(), b: p[1].trim() }; if (t) o.t = t; return o; });
+// peso escrito na linha: "Peso-médio", "medio", "Middleweight", "185", "galo feminino", "W Flyweight"…
+function catOf(txt) {
+  const sem = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const t = sem(txt).replace(/peso[\s-]*/g, '').replace(/\b(lbs?|libras)\b/g, '').trim();
+  const fem = /femin|women|\bf\b|\bw\b/.test(t); const b = t.replace(/femin\w*|women'?s?|\bf\b|\bw\b/g, '').trim();
+  const M = [['peso-palha', /^(palha|strawweight|115)$/], ['peso-mosca', /^(mosca|flyweight|125)$/], ['peso-galo', /^(galo|bantamweight|135)$/], ['peso-pena', /^(pena|featherweight|145)$/], ['peso-leve', /^(leve|lightweight|155)$/], ['peso-meio-medio', /^(meio[\s-]?medio|welterweight|170)$/], ['peso-medio', /^(medio|middleweight|185)$/], ['peso-meio-pesado', /^(meio[\s-]?pesado|light[\s-]?heavyweight|205)$/], ['peso-pesado', /^(pesado|heavyweight|265)$/], ['peso-casado', /^(casado|catchweight|catch)$/]];
+  for (const [n, rx] of M) if (rx.test(b)) { const base = CATS.find(c => sem(c) === n); if (!base) return ''; const f = CATS.find(c => sem(c) === n + ' feminino'); return fem && f ? f : base; }
+  return '';
+}
+const parseFights0 = txt => txt.split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => { let t = '', cat = ''; const tm = l.match(/\s*[-–|@]\s*(\d{1,2})[:h](\d{2})\s*$/); if (tm) { t = tm[1].padStart(2, '0') + ':' + tm[2]; l = l.slice(0, tm.index); } const cm = l.match(/\s+[-–|@]\s+([^|@]+?)\s*$/) || l.match(/\s*[|@]\s*([^|@]+?)\s*$/); if (cm) { const c = catOf(cm[1]); if (c) { cat = c; l = l.slice(0, cm.index); } } const p = l.split(/\s+(?:x|vs\.?|X|VS)\s+/); if (p.length !== 2) return null; const o = { id: 'f' + (i + 1), a: p[0].trim(), b: p[1].trim() }; if (t) o.t = t; if (cat) o.cat = cat; return o; });
 $('btnCreate').onclick = async () => {
   const name = $('evName').value.trim(), date = $('evDate').value, lock = brt($('evLock').value);
   const fights = parseFights($('evFights').value);
@@ -630,6 +639,11 @@ function eventCard(id, ev) {
       <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option><option value="d">🤝 Empate</option><option value="nc">🚫 Cancelada / sem resultado</option></select>
       <select data-i="${i}" data-k="m"><option value="">Como…</option>${Object.entries(MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
       <select data-i="${i}" data-k="r"><option value="">Round…</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">R${r}</option>`).join('')}</select></div></div>`).join('')}</div>
+    <div class="pastecta"><button class="ghost" data-act="addf">➕ Acrescentar lutas</button><span class="muted">esqueceu alguma luta? põe aqui</span></div>
+    <div data-addbox hidden style="margin:6px 0 10px">
+      <textarea data-addtxt rows="4" placeholder="Uma por linha, igual quando cria o evento. Ex.:&#10;Jake Matthews x Tahir Abdullayev - Peso-meio-médio - 12:10&#10;Ana Silva x Maria Souza - galo feminino - 11:45" style="width:100%"></textarea>
+      <div class="row"><label class="muted">Entram</label><select data-addpos style="width:auto"><option value="end">no fim do card (preliminares)</option><option value="top">no topo (vira a luta principal)</option></select>
+        <button data-act="addgo">➕ Acrescentar</button><button class="ghost" data-act="addclose">Fechar</button></div><div class="muted" data-addout></div></div>
     <div class="pastecta"><button class="ghost" data-act="paste">📋 Lançar resultados de uma vez</button><span class="muted">print ou texto de qualquer site: preencho vencedor, método e round</span></div>
     <div data-pastebox hidden>
       <div data-drop tabindex="0" style="margin-top:6px;border:2px dashed #3a4a5a;border-radius:10px;padding:14px;text-align:center;cursor:pointer">
@@ -713,6 +727,28 @@ function eventCard(id, ev) {
     out.innerHTML = (ok.length ? `✅ Marquei ${ok.length}: ${ok.map(esc).join(', ')}.` : '') + (miss.length ? ` <span style="color:#ff8e86">Não achei: ${miss.map(esc).join(', ')}.</span>` : '') + (dup.length ? ` <span style="color:#f2c94c">Nome igual em mais de uma luta (use o nome completo): ${dup.map(esc).join(', ')}.</span>` : '') + (ok.length ? ' Depois é só Salvar.' : '');
   };
   el.querySelector('[data-act="zebraclr"]').onclick = () => { (ev.fights || []).forEach((f, i) => { el.querySelector(`[data-i="${i}"][data-k="dog"]`).value = ''; }); dirty(); paintW(); el.querySelector('[data-zout]').textContent = 'Zebras removidas. Depois é só Salvar.'; };
+  el.querySelector('[data-act="addf"]').onclick = () => { const b = el.querySelector('[data-addbox]'); b.hidden = !b.hidden; if (!b.hidden) el.querySelector('[data-addtxt]').focus(); };
+  el.querySelector('[data-act="addclose"]').onclick = () => { el.querySelector('[data-addbox]').hidden = true; };
+  el.querySelector('[data-act="addgo"]').onclick = async () => {
+    const ao = el.querySelector('[data-addout]');
+    if (!el.querySelector('[data-unsaved]').hidden) { ao.textContent = '⚠️ Você tem mudanças não salvas nas lutas. Clique em Salvar primeiro, depois acrescente.'; return; }
+    const novas = parseFights(el.querySelector('[data-addtxt]').value);
+    if (!novas.length || novas.includes(null)) { ao.textContent = 'Confira: uma luta por linha, no formato "Lutador A x Lutador B" (peso e horário opcionais).'; return; }
+    const velhas = ev.fights || [];
+    const sem = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const repet = novas.filter(n => velhas.some(f => [sem(f.a), sem(f.b)].sort().join('|') === [sem(n.a), sem(n.b)].sort().join('|')));
+    if (repet.length) { ao.textContent = '⚠️ Já está no card: ' + repet.map(n => n.a + ' x ' + n.b).join(', ') + '. Tira da lista e tenta de novo.'; return; }
+    let maxN = velhas.reduce((m, f) => Math.max(m, +(String(f.id || '').replace(/\D/g, '')) || 0), 0);
+    novas.forEach(n => { n.id = 'f' + (++maxN); n.main = false; n.rounds = 3; });
+    const top = el.querySelector('[data-addpos]').value === 'top';
+    if (top) { novas[0].main = true; novas[0].rounds = 5; }
+    const fights = top ? novas.concat(velhas) : velhas.concat(novas);
+    const locks = locksOf(ev.date, fights);
+    ao.textContent = 'Salvando…';
+    try { await db.collection('bolao').doc(id).set({ fights, locks, ...lockLists(locks) }, { merge: true });
+      ao.textContent = `✅ ${novas.length} luta(s) acrescentada(s). Atualizando…`; setOpen(id, true); setTimeout(loadEvents, 700); }
+    catch (e) { ao.textContent = 'Não salvou: ' + e.message; }
+  };
   el.querySelector('[data-act="paste"]').onclick = () => { const b = el.querySelector('[data-pastebox]'); b.hidden = !b.hidden; if (!b.hidden) el.querySelector('[data-paste]').focus(); };
   el.querySelector('[data-act="pasteclose"]').onclick = () => { el.querySelector('[data-pastebox]').hidden = true; };
   const fsRounds = () => (ev.fights || []).map((f, i) => ({ a: f.a, b: f.b, rounds: +el.querySelector(`[data-i="${i}"][data-k="rounds"]`).value || 3 }));
