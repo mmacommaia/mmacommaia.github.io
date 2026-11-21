@@ -97,6 +97,10 @@
   .mv { background: transparent; border: 1px solid #2c3a4a; color: #ccc; border-radius: 6px; padding: 1px 6px; font-size: 11px; cursor: pointer; }
   .fedit { width: 100%; max-width: 260px; margin: 4px auto; display: block; text-align: center; background: #0d141c; border: 1px solid var(--gold2); color: #fff; border-radius: 8px; padding: 6px; font: 600 15px system-ui, sans-serif; }
   .fight.dragging { opacity: .35; } .fight.drop-above { box-shadow: 0 -4px 0 var(--gold2); } .fight.drop-below { box-shadow: 0 4px 0 var(--gold2); }
+  .lk { border: 1px solid #c0392b; background: rgba(192,57,43,.15); color: #ffb3a8; border-radius: 999px; padding: 4px 10px; font: 700 12px system-ui, sans-serif; cursor: pointer; margin-right: 6px; white-space: nowrap; }
+  .lk.fechada { border-color: #2e7d32; background: rgba(46,125,50,.18); color: #a5d6a7; }
+  .lk:disabled { cursor: default; opacity: .8; }
+  .lk.all { margin-left: 8px; }
   .fno { font-size: 14px; text-transform: uppercase; color: var(--gold2); margin-right: auto; letter-spacing: .05em; }
   .chip { background: #1a2b3f; color: var(--ink); border: 1px solid #2a4260; padding: 6px 11px; font-size: 13px; font-weight: 700; border-radius: 999px; }
   .chip.sm { padding: 5px 9px; font-size: 12.5px; }
@@ -428,6 +432,7 @@ const brt = v => { if (!v) return 0; const [d, h] = v.split('T'); const [Y, M, D
 function locksOf(date, fights) {
   const d = new Date(date), late = fights.some(f => parseInt(f.t || '') >= 12), o = {};
   for (const f of fights) { if (!f.t) continue; const [hh, mm] = f.t.split(':').map(Number); if (isNaN(hh)) continue; let ms = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), hh + 3, mm || 0); if (hh < 12 && late) ms += 864e5; o[f.id] = ms; }
+  for (const f of fights) if (f.fechou) o[f.id] = Math.min(o[f.id] || Infinity, f.fechou); // 🔒 fechada na mão pelo admin
   return o;
 }
 // mesma coisa em fila (ordem de início), que é o formato que as regras do banco conseguem conferir rápido
@@ -646,7 +651,7 @@ function eventCard(id, ev) {
       <label class="stsel"><span>Status</span><select data-k="status" style="width:auto"><option value="open">Aberto</option><option value="closed">Fechado</option><option value="done">Encerrado</option></select></label></div>
     <p class="muted donehint" data-donehint hidden>✅ Ao salvar como <b>Encerrado</b>, este evento sai daqui e vai pra lista compacta de Encerrados (os jogadores veem só o resumo).</p>
     <img class="poster" data-poster alt="" hidden>
-    <div class="evinfo"><span>🔒 Palpites fecham <b>${esc(fmtBrt(ev.lock))}</b></span><span>🥊 ${F0.length} lutas</span></div>
+    <div class="evinfo"><span>🔒 Palpites fecham <b>${esc(fmtBrt(ev.lock))}</b></span><button type="button" class="lk all" data-lkall>🔒 Fechar TODOS os palpites agora</button><span>🥊 ${F0.length} lutas</span></div>
     <details class="evset"><summary>⚙️ Ajustes do card <span class="muted">arte, horários em sequência, imagem dos stories, prazo dos pontos</span></summary>
     <div class="row"><span class="muted">📸 Card principal (vai na imagem dos stories): as primeiras</span><input type="number" data-k="mc" min="1" max="15" value="${ev.mc || 5}" style="width:70px!important"><span class="muted">lutas</span></div>
     <div class="row"><span class="muted">⏳ Prometo os pontos em até</span><input type="number" data-k="resH" min="1" max="72" value="${ev.resH || 12}" style="width:70px!important"><span class="muted">horas depois da última luta (aparece pro jogador no app)</span></div>
@@ -657,7 +662,7 @@ function eventCard(id, ev) {
       <div class="row"><button class="ghost" data-act="zebras">🦓 Marcar zebras</button><button class="ghost" data-act="zebraclr">Tirar todas</button><span class="muted grow" data-zout></span></div></div>
     </details>
     <div class="fights">${(ev.fights || []).map((f, i) => `<div class="fight vis" data-fi="${i}">
-      <div class="ftop"><span class="mvbox"><span class="drag" draggable="true" title="Segure e arraste pra mudar a ordem">⠿</span><button type="button" class="mv" data-mv="-1" title="Subir">▲</button><button type="button" class="mv" data-mv="1" title="Descer">▼</button><button type="button" class="mv" data-ed title="Corrigir os nomes">✏️</button><button type="button" class="mv" data-del title="Excluir esta luta">🗑️</button></span><span class="fno">${i === 0 ? '⭐ Luta principal' : i === 1 ? '⭐ Co-principal' : 'Luta ' + (i + 1)}</span>
+      <div class="ftop"><span class="mvbox"><span class="drag" draggable="true" title="Segure e arraste pra mudar a ordem">⠿</span><button type="button" class="mv" data-mv="-1" title="Subir">▲</button><button type="button" class="mv" data-mv="1" title="Descer">▼</button><button type="button" class="mv" data-ed title="Corrigir os nomes">✏️</button><button type="button" class="mv" data-del title="Excluir esta luta">🗑️</button></span><span class="fno">${i === 0 ? '⭐ Luta principal' : i === 1 ? '⭐ Co-principal' : 'Luta ' + (i + 1)}</span><button type="button" class="lk" data-lk title="Fecha os palpites desta luta e das que vêm antes dela na noite (as de baixo)"></button>
         <label class="chip tg"><input type="checkbox" data-i="${i}" data-k="main"> ⭐ Principal</label>
         <span class="seg"><button type="button" class="chip" data-set="rounds" data-v="3">3R</button><button type="button" class="chip" data-set="rounds" data-v="5">5R</button></span>
         <select class="mini" data-i="${i}" data-k="cat"><option value="">Categoria…</option>${CATS.map(c => `<option>${c}</option>`).join('')}</select>
@@ -753,6 +758,24 @@ function eventCard(id, ev) {
   box.addEventListener('drop', e => { if (!arrastando) return; e.preventDefault(); const f = e.target.closest('.fight'); if (f && f !== arrastando) { const r = f.getBoundingClientRect(); box.insertBefore(arrastando, e.clientY < r.top + r.height / 2 ? f : f.nextElementSibling); mudouOrdem(); } limpa(); });
   box.addEventListener('input', e => { const x = e.target.closest('.fedit'); if (!x) return; const n = x.closest('.side').querySelector('.fname'); n.textContent = x.value; dirty(); });
   box.addEventListener('dragend', () => { if (arrastando) arrastando.classList.remove('dragging'); arrastando = null; limpa(); });
+  // 🔒 fechar palpites na mão (os horários podem estar errados): grava na hora, sem precisar Salvar
+  const lkTxt = () => { const L = ev.locks || {}, agora = Date.now();
+    box.querySelectorAll(':scope > .fight').forEach(row => { const f = ev.fights[+row.dataset.fi]; const b = row.querySelector('[data-lk]'); if (!f || !b) return;
+      const fechada = (L[f.id] || Infinity) <= agora; b.classList.toggle('fechada', fechada);
+      b.textContent = fechada ? (f.fechou ? '🔓 Reabrir palpites' : '🔒 Fechada (horário)') : '🔒 Fechar palpites'; b.disabled = fechada && !f.fechou; }); };
+  const gravaLocks = async (msgOk) => { const out = el.querySelector('[data-out]'); const locks = locksOf(ev.date, ev.fights);
+    const novoLock = Math.min(ev.lock || Infinity, ...Object.values(locks));
+    try { await db.collection('bolao').doc(id).set({ fights: ev.fights, locks, ...lockLists(locks), lock: novoLock }, { merge: true });
+      ev.locks = locks; ev.lock = novoLock; lkTxt(); out.textContent = msgOk; } catch (e) { out.textContent = 'Não consegui gravar: ' + e.message; } };
+  box.addEventListener('click', async e => { const b = e.target.closest('[data-lk]'); if (!b) return; const row = b.closest('.fight'); const f = ev.fights[+row.dataset.fi]; if (!f) return;
+    if (f.fechou) { delete f.fechou; await gravaLocks(`🔓 ${f.a} x ${f.b} reaberta (se o horário dela já passou, continua fechada pelo horário).`); return; }
+    const agora = Date.now(), linhas = [...box.querySelectorAll(':scope > .fight')], pos = linhas.indexOf(row); let n = 0;
+    linhas.slice(pos).forEach(r => { const x = ev.fights[+r.dataset.fi]; if (x && !x.w && !((ev.locks || {})[x.id] <= agora)) { x.fechou = agora; n++; } }); // esta + as que vêm antes na noite
+    if (!f.fechou) { f.fechou = agora; n++; }
+    await gravaLocks(`🔒 Palpites fechados: ${f.a} x ${f.b}${n > 1 ? ` e mais ${n - 1} luta(s) antes dela` : ''}.`); });
+  el.querySelector('[data-lkall]').onclick = async () => { if (!confirm('Fechar os palpites de TODAS as lutas deste evento agora?')) return; const agora = Date.now();
+    ev.fights.forEach(x => { if (!((ev.locks || {})[x.id] <= agora)) x.fechou = agora; }); await gravaLocks('🔒 Todos os palpites deste evento foram fechados.'); };
+  lkTxt(); const lkTimer = setInterval(() => { if (!document.body.contains(el)) return clearInterval(lkTimer); lkTxt(); }, 30000);
   el.querySelector('[data-act="seq"]').onclick = () => {
     const [h, m] = el.querySelector('[data-seq-start]').value.split(':').map(Number); const gap = +el.querySelector('[data-seq-gap]').value || 30;
     if (isNaN(h)) return; const n = (ev.fights || []).length;
@@ -849,7 +872,7 @@ function eventCard(id, ev) {
   el.querySelector('[data-act="save"]').onclick = async () => {
     const ord = ordem(), reordenou = ord.length !== (ev.fights || []).length || ord.some((x, k) => x !== k);
     const ev0 = ord.map(i => ev.fights[i]);
-    const fights = ord.map(i => [ev.fights[i], i]).map(([f, i]) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: (q('a') && q('a').value.trim()) || f.a, b: (q('b') && q('b').value.trim()) || f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && w !== 'nc' && m) o.m = m; if (w && w !== 'nc' && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
+    const fights = ord.map(i => [ev.fights[i], i]).map(([f, i]) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: (q('a') && q('a').value.trim()) || f.a, b: (q('b') && q('b').value.trim()) || f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; if (f.fechou) o.fechou = f.fechou; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && w !== 'nc' && m) o.m = m; if (w && w !== 'nc' && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
     const data = { fights, status: el.querySelector('[data-k="status"]').value, mc: Math.max(1, Math.min(15, +el.querySelector('[data-k="mc"]').value || 5)), resH: Math.max(1, Math.min(72, +el.querySelector('[data-k="resH"]').value || 12)), season: ev.season || new Date(ev.date || Date.now()).toISOString().slice(0, 7), poster: firebase.firestore.FieldValue.delete(), locks: locksOf(ev.date, fights), ...lockLists(locksOf(ev.date, fights)) };
     out.textContent = 'Salvando…'; let kb = 0;
     try { const r = await saveImgs(id, { poster: img.poster, fights: ord.map(i => img.fights[i] || {}) }, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); const changed = resKey(ev.fights) !== resKey(fights); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB).`;
