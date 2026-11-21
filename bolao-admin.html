@@ -92,6 +92,11 @@
   .fight.vis.has-w { border-color: rgba(63,207,142,.45); }
   .fight.vis[data-w="d"] { border-color: rgba(240,185,66,.6); } .fight.vis[data-w="nc"] { opacity: .55; }
   .ftop { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .mvbox { display: inline-flex; align-items: center; gap: 2px; margin-right: 6px; }
+  .drag { cursor: grab; font-size: 20px; line-height: 1; padding: 2px 6px; color: var(--gold2); user-select: none; }
+  .mv { background: transparent; border: 1px solid #2c3a4a; color: #ccc; border-radius: 6px; padding: 1px 6px; font-size: 11px; cursor: pointer; }
+  .fedit { width: 100%; max-width: 260px; margin: 4px auto; display: block; text-align: center; background: #0d141c; border: 1px solid var(--gold2); color: #fff; border-radius: 8px; padding: 6px; font: 600 15px system-ui, sans-serif; }
+  .fight.dragging { opacity: .35; } .fight.drop-above { box-shadow: 0 -4px 0 var(--gold2); } .fight.drop-below { box-shadow: 0 4px 0 var(--gold2); }
   .fno { font-size: 14px; text-transform: uppercase; color: var(--gold2); margin-right: auto; letter-spacing: .05em; }
   .chip { background: #1a2b3f; color: var(--ink); border: 1px solid #2a4260; padding: 6px 11px; font-size: 13px; font-weight: 700; border-radius: 999px; }
   .chip.sm { padding: 5px 9px; font-size: 12.5px; }
@@ -190,7 +195,7 @@
     <div class="pane" data-pane="eventos" hidden><h2>📋 Eventos <span class="muted hint">clique no nome do evento pra abrir ou fechar</span></h2><div id="events"><p class="muted">Carregando…</p></div></div>
     <div class="pane" data-pane="criar" hidden><h2>➕ Criar eventos</h2>
     <details class="card newbox" id="bulkSec" open><summary><b>📥 Vários eventos de uma vez</b> <span class="muted">cole a lista que o Claude te mandar</span></summary>
-      <p class="muted">Um evento por bloco. A 1ª linha do bloco começa com <b>===</b>: nome | data (AAAA-MM-DD) | hora que os palpites fecham (Brasília). Depois, uma luta por linha (a principal primeiro), com horário opcional no fim.</p>
+      <p class="muted">Um evento por bloco. A 1ª linha do bloco começa com <b>===</b>: nome | data (AAAA-MM-DD) | hora que os palpites fecham (Brasília). Depois, uma luta por linha (a principal primeiro), com horário, peso e odds opcionais. <b>Se o evento já existir (mesmo nome), ele é atualizado</b>: lutas que já estão lá mantêm resultado, fotos e palpites; as novas entram; a ordem segue a lista.</p>
       <textarea id="bulkTxt" rows="8" spellcheck="false" placeholder="=== UFC 331: Topuria x Holloway | 2026-11-29 | 23:00&#10;Ilia Topuria x Max Holloway - 01:00&#10;Jéssica Andrade x Zhang Weili - 00:30&#10;&#10;=== UFC Fight Night: Moreno x Royval | 2026-12-06 | 20:00&#10;Brandon Moreno x Brandon Royval"></textarea>
       <div class="row" style="margin-top:8px"><button class="ghost" id="bulkPrev">👀 Conferir</button><button id="bulkGo" hidden>Criar todos</button></div>
       <div class="muted" id="bulkOut"></div>
@@ -444,7 +449,7 @@ const fmtBrt = ms => { if (!ms) return '—'; const d = new Date(ms - 3 * 3600e3
 // odds no fim da linha ("A x B - 16:50 | +120 / -145") ou junto do nome ("A (+120) x B (-145)"): a zebra é quem tem a odd maior
 const parseFights = txt => {
   const L = String(txt || '').split('\n').map(l => l.trim()).filter(Boolean), odds = [];
-  const clean = L.map(l => { let o = null; const m = l.match(/\s*\|\s*([+-]?\d{2,4})\s*[\/|x]\s*([+-]?\d{2,4})\s*$/i);
+  const clean = L.map(l => { let o = null; const m = l.match(/\s*\|\s*([+-]?\d{2,4})\s*[\/|x]\s*([+-]?\d{2,4})\s*(?=$|\|)/i);
     if (m) { o = [+m[1], +m[2]]; l = l.slice(0, m.index); }
     else { const n = [...l.matchAll(/\s*\(([+-]\d{2,4})\)/g)]; if (n.length === 2) { o = [+n[0][1], +n[1][1]]; l = l.replace(/\s*\([+-]\d{2,4}\)/g, ''); } }
     odds.push(o); return l; });
@@ -461,7 +466,16 @@ function catOf(txt) {
   for (const [n, rx] of M) if (rx.test(b)) { const base = CATS.find(c => sem(c) === n); if (!base) return ''; const f = CATS.find(c => sem(c) === n + ' feminino'); return fem && f ? f : base; }
   return '';
 }
-const parseFights0 = txt => txt.split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => { let t = '', cat = ''; const tm = l.match(/\s*[-–|@]\s*(\d{1,2})[:h](\d{2})\s*$/); if (tm) { t = tm[1].padStart(2, '0') + ':' + tm[2]; l = l.slice(0, tm.index); } const cm = l.match(/\s+[-–|@]\s+([^|@]+?)\s*$/) || l.match(/\s*[|@]\s*([^|@]+?)\s*$/); if (cm) { const c = catOf(cm[1]); if (c) { cat = c; l = l.slice(0, cm.index); } } const p = l.split(/\s+(?:x|vs\.?|X|VS)\s+/); if (p.length !== 2) return null; const o = { id: 'f' + (i + 1), a: p[0].trim(), b: p[1].trim() }; if (t) o.t = t; if (cat) o.cat = cat; return o; });
+const parseFights0 = txt => txt.split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => {
+  let t = '', cat = '';
+  const tm = l.match(/(?:^|\s|[-–|@])\s*(\d{1,2})[:h](\d{2})(?=\s*(?:$|[|@]|\s[-–]\s))/); // horário em qualquer lugar da linha
+  if (tm) { t = tm[1].padStart(2, '0') + ':' + tm[2]; l = (l.slice(0, tm.index) + ' ' + l.slice(tm.index + tm[0].length)).trim(); }
+  const partes = l.split('|').map(x => x.trim()); l = partes.shift();
+  for (const x of partes) { const c = catOf(x); if (c && !cat) cat = c; } // "| Peso-Leve |", odds "- / -" são ignoradas
+  l = l.replace(/\s+[-–@]\s*$/, '').trim();
+  const cm = l.match(/\s+[-–@]\s+([^@]+?)\s*$/); if (cm) { const c = catOf(cm[1]); if (c) { if (!cat) cat = c; l = l.slice(0, cm.index); } }
+  const p = l.split(/\s+(?:x|vs\.?|X|VS)\s+/); if (p.length !== 2) return null;
+  const o = { id: 'f' + (i + 1), a: p[0].trim(), b: p[1].trim() }; if (t) o.t = t; if (cat) o.cat = cat; return o; });
 $('btnCreate').onclick = async () => {
   const name = $('evName').value.trim(), date = $('evDate').value, lock = brt($('evLock').value);
   const fights = parseFights($('evFights').value);
@@ -482,19 +496,43 @@ function parseBulk(txt) {
   for (const e of out) { e.fights = parseFights(e.lines.join('\n')); if (!e.err && (!e.fights.length || e.fights.includes(null))) e.err = 'confira as lutas (Lutador A x Lutador B)'; if (!e.err) { e.fights.forEach((f, i) => { f.main = i < 2; f.rounds = i === 0 ? 5 : 3; }); e.lock = brt(e.date + 'T' + e.hm.padStart(5, '0')); } }
   return out;
 }
+// mesmo evento já criado? atualiza: lutas iguais mantêm resultado, fotos e id; as novas entram; a ordem segue a lista colada
+const semAc = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+const nomeLimpo = x => semAc(String(x || '').split(/\s+[-–]\s+|\s*\|/)[0]); // ignora lixo colado no nome ("John Mitchell - 12:10 | Peso…")
+const parKey = f => [nomeLimpo(f.a), nomeLimpo(f.b)].sort().join('|');
+const ultKey = f => [nomeLimpo(f.a).split(' ').pop(), nomeLimpo(f.b).split(' ').pop()].sort().join('|');
+function planoUpd(ev, novas) {
+  const velhas = (ev.fights || []).map(f => Object.assign({}, f)), usadas = new Set(); let maxN = velhas.reduce((m, f) => Math.max(m, +(String(f.id || '').replace(/\D/g, '')) || 0), 0);
+  const achar = n => { let k = velhas.findIndex((f, i) => !usadas.has(i) && parKey(f) === parKey(n)); if (k < 0) k = velhas.findIndex((f, i) => !usadas.has(i) && ultKey(f) === ultKey(n)); return k; };
+  let atual = 0, novasN = 0; const fights = [];
+  novas.forEach((n, pos) => { const k = achar(n);
+    if (k >= 0) { usadas.add(k); const f = velhas[k]; const o = Object.assign({}, f, { a: n.a, b: n.b });
+      if (nomeLimpo(f.a).split(' ').pop() === nomeLimpo(n.b).split(' ').pop() && nomeLimpo(f.b).split(' ').pop() === nomeLimpo(n.a).split(' ').pop()) { o.a = n.b; o.b = n.a; } // mesma luta com os lados trocados: mantém o lado salvo (resultado e palpites)
+      if (n.t) o.t = n.t; if (n.cat) o.cat = n.cat; if (n.dog) o.dog = (o.a === n.a ? n.dog : (n.dog === 'a' ? 'b' : 'a'));
+      fights.push(o); atual++; }
+    else { const o = Object.assign({}, n, { id: 'f' + (++maxN), main: pos < 2, rounds: pos === 0 ? 5 : 3 }); fights.push(o); novasN++; } });
+  const sobra = velhas.filter((f, i) => !usadas.has(i)); sobra.forEach(f => fights.push(f));
+  return { fights, atual, novasN, sobra };
+}
 let bulkList = [];
 $('bulkPrev').onclick = async () => {
-  bulkList = parseBulk($('bulkTxt').value); const have = new Set(); try { (await db.collection('bolao').get()).forEach(d => have.add(String(d.data().name || '').trim().toLowerCase())); } catch (e) { }
-  bulkList.forEach(e => { if (!e.err && have.has(e.name.toLowerCase())) e.skip = true; });
-  const ok = bulkList.filter(e => !e.err && !e.skip);
-  $('bulkOut').innerHTML = bulkList.length ? bulkList.map(e => `<div class="evrow"><div class="evrow-i"><b>${e.err ? '❌' : e.skip ? '⏭️' : '✅'} ${esc(e.name || '(sem nome)')}</b><span class="muted">${e.err ? esc(e.err) : e.skip ? 'já existe, vou pular' : `${esc(e.date)} · fecha ${esc(e.hm)} · ${e.fights.length} lutas · principal: ${esc(e.fights[0].a)} x ${esc(e.fights[0].b)}${e.fights.some(f => f.dog) ? ` · 🦓 ${e.fights.filter(f => f.dog).length} zebras` : ''}`}</span></div></div>`).join('') : 'Nada pra criar: confira o formato.';
-  $('bulkGo').hidden = !ok.length; $('bulkGo').textContent = `Criar ${ok.length} ${ok.length === 1 ? 'evento' : 'eventos'}`;
+  bulkList = parseBulk($('bulkTxt').value); const have = new Map(); try { (await db.collection('bolao').get()).forEach(d => have.set(String(d.data().name || '').trim().toLowerCase(), { id: d.id, ev: d.data() })); } catch (e) { }
+  bulkList.forEach(e => { if (e.err) return; const h = have.get(e.name.toLowerCase()); if (!h) return;
+    if (h.ev.status === 'done') { e.skip = true; return; }
+    e.upd = h; e.plano = planoUpd(h.ev, e.fights); });
+  const ok = bulkList.filter(e => !e.err && !e.skip), nc = ok.filter(e => !e.upd).length, nu = ok.filter(e => e.upd).length;
+  $('bulkOut').innerHTML = bulkList.length ? bulkList.map(e => { const p = e.plano;
+    const info = e.err ? esc(e.err) : e.skip ? 'já existe e está Encerrado, vou pular' : e.upd ? `🔄 já existe, vou ATUALIZAR: ${p.atual} luta(s) atualizada(s) (resultados, fotos e palpites mantidos), ${p.novasN} nova(s)${p.sobra.length ? `, ${p.sobra.length} que não está(ão) na lista fica(m) no fim: ${esc(p.sobra.map(f => f.a + ' x ' + f.b).join(', '))} (use 🗑️ no card se quiser tirar)` : ''}` : `${esc(e.date)} · fecha ${esc(e.hm)} · ${e.fights.length} lutas`;
+    return `<div class="evrow"><div class="evrow-i"><b>${e.err ? '❌' : e.skip ? '⏭️' : e.upd ? '🔄' : '✅'} ${esc(e.name || '(sem nome)')}</b><span class="muted">${info}</span></div></div>`; }).join('') : '<p class="muted">Nada pra importar.</p>';
+  $('bulkGo').hidden = !ok.length; $('bulkGo').textContent = [nc ? `Criar ${nc} ${nc === 1 ? 'evento' : 'eventos'}` : '', nu ? `Atualizar ${nu} ${nu === 1 ? 'evento' : 'eventos'}` : ''].filter(Boolean).join(' e ');
 };
 $('bulkGo').onclick = async () => {
-  const ok = bulkList.filter(e => !e.err && !e.skip); if (!ok.length) return; $('bulkGo').disabled = true; let n = 0;
-  try { for (const e of ok) { const d0 = brt(e.date + 'T12:00'); await db.collection('bolao').add({ name: e.name, date: d0, lock: e.lock, status: 'open', season: e.date.slice(0, 7), boost: 1, fights: e.fights, locks: locksOf(d0, e.fights), ...lockLists(locksOf(d0, e.fights)) }); n++; }
-    $('bulkOut').innerHTML = `✅ ${n} ${n === 1 ? 'evento criado' : 'eventos criados'}. Fotos e arte você coloca em cada card.`; $('bulkTxt').value = ''; $('bulkGo').hidden = true; loadEvents(); }
-  catch (err) { $('bulkOut').textContent = `Criei ${n}, parei no erro: ${err.message}`; }
+  const ok = bulkList.filter(e => !e.err && !e.skip); if (!ok.length) return; $('bulkGo').disabled = true; let n = 0, u = 0;
+  try { for (const e of ok) { const d0 = brt(e.date + 'T12:00');
+      if (e.upd) { const F = e.plano.fights, L = locksOf(d0, F); await db.collection('bolao').doc(e.upd.id).set({ date: d0, lock: e.lock, season: e.date.slice(0, 7), fights: F, locks: L, ...lockLists(L) }, { merge: true }); u++; setOpen(e.upd.id, true); continue; }
+      await db.collection('bolao').add({ name: e.name, date: d0, lock: e.lock, status: 'open', season: e.date.slice(0, 7), boost: 1, fights: e.fights, locks: locksOf(d0, e.fights), ...lockLists(locksOf(d0, e.fights)) }); n++; }
+    $('bulkOut').innerHTML = [n ? `✅ ${n} ${n === 1 ? 'evento criado' : 'eventos criados'}` : '', u ? `🔄 ${u} ${u === 1 ? 'evento atualizado' : 'eventos atualizados'}` : ''].filter(Boolean).join(' · ') + '. Confere os cards em 📋 Eventos.'; $('bulkTxt').value = ''; $('bulkGo').hidden = true; loadEvents(); }
+  catch (err) { $('bulkOut').textContent = `Fiz ${n + u}, parei no erro: ${err.message}`; }
   $('bulkGo').disabled = false;
 };
 
@@ -619,16 +657,16 @@ function eventCard(id, ev) {
       <div class="row"><button class="ghost" data-act="zebras">🦓 Marcar zebras</button><button class="ghost" data-act="zebraclr">Tirar todas</button><span class="muted grow" data-zout></span></div></div>
     </details>
     <div class="fights">${(ev.fights || []).map((f, i) => `<div class="fight vis" data-fi="${i}">
-      <div class="ftop"><span class="fno">${i === 0 ? '⭐ Luta principal' : i === 1 ? '⭐ Co-principal' : 'Luta ' + (i + 1)}</span>
+      <div class="ftop"><span class="mvbox"><span class="drag" draggable="true" title="Segure e arraste pra mudar a ordem">⠿</span><button type="button" class="mv" data-mv="-1" title="Subir">▲</button><button type="button" class="mv" data-mv="1" title="Descer">▼</button><button type="button" class="mv" data-ed title="Corrigir os nomes">✏️</button><button type="button" class="mv" data-del title="Excluir esta luta">🗑️</button></span><span class="fno">${i === 0 ? '⭐ Luta principal' : i === 1 ? '⭐ Co-principal' : 'Luta ' + (i + 1)}</span>
         <label class="chip tg"><input type="checkbox" data-i="${i}" data-k="main"> ⭐ Principal</label>
         <span class="seg"><button type="button" class="chip" data-set="rounds" data-v="3">3R</button><button type="button" class="chip" data-set="rounds" data-v="5">5R</button></span>
         <select class="mini" data-i="${i}" data-k="cat"><option value="">Categoria…</option>${CATS.map(c => `<option>${c}</option>`).join('')}</select>
         <span class="tm" title="Horário da luta (Brasília): os palpites dela fecham nessa hora">🕐<input type="time" class="time" data-i="${i}" data-k="t"></span></div>
       <div class="duo">
-        <div class="side" data-side="a"><div class="face" data-face="a" data-i="${i}" title="Foto de ${esc(f.a)}">📷</div><b class="fname">${esc(f.a)}</b>
+        <div class="side" data-side="a"><div class="face" data-face="a" data-i="${i}" title="Foto de ${esc(f.a)}">📷</div><b class="fname">${esc(f.a)}</b><input class="fedit" data-i="${i}" data-k="a" value="${esc(f.a)}" hidden>
           <div class="sbtn"><button type="button" class="wbtn" data-set="w" data-v="a">🏆 Venceu</button><button type="button" class="dbtn" data-set="dog" data-v="a" title="Marcar como zebra (+2 pra quem acertar)">ZEBRA</button></div></div>
         <div class="mid"><span class="vsx">VS</span><button type="button" class="xbtn" data-set="w" data-v="d">🤝 Empate</button><button type="button" class="xbtn" data-set="w" data-v="nc">🚫 Cancelada</button></div>
-        <div class="side" data-side="b"><div class="face" data-face="b" data-i="${i}" title="Foto de ${esc(f.b)}">📷</div><b class="fname">${esc(f.b)}</b>
+        <div class="side" data-side="b"><div class="face" data-face="b" data-i="${i}" title="Foto de ${esc(f.b)}">📷</div><b class="fname">${esc(f.b)}</b><input class="fedit" data-i="${i}" data-k="b" value="${esc(f.b)}" hidden>
           <div class="sbtn"><button type="button" class="wbtn" data-set="w" data-v="b">🏆 Venceu</button><button type="button" class="dbtn" data-set="dog" data-v="b" title="Marcar como zebra (+2 pra quem acertar)">ZEBRA</button></div></div>
       </div>
       <div class="how"><span class="seg">${Object.entries({ ko: '👊 Nocaute', sub: '🔒 Finalização', dec: '⚖️ Decisão' }).map(([k, v]) => `<button type="button" class="chip" data-set="m" data-v="${k}">${v}</button>`).join('')}</span>
@@ -693,13 +731,35 @@ function eventCard(id, ev) {
   });
   el.querySelector('[data-act="poster"]').onclick = async () => { const file = await pickFile(); if (!file) return; try { img.poster = await toDataUrl(await loadImg(file), 900, 900, 'image/jpeg', 0.82); paint(); dirty(); } catch (e) { out.textContent = 'Não abriu a imagem: ' + e.message; } };
   el.querySelector('[data-act="noposter"]').onclick = () => { img.poster = ''; paint(); dirty(); };
+  // ↕️ ordem das lutas: setas ou arrastar (a de cima é a principal)
+  const box = el.querySelector('.fights');
+  const ordem = () => [...box.querySelectorAll(':scope > .fight')].map(x => +x.dataset.fi);
+  const renum = () => [...box.querySelectorAll(':scope > .fight')].forEach((x, k) => { x.querySelector('.fno').textContent = k === 0 ? '⭐ Luta principal' : k === 1 ? '⭐ Co-principal' : 'Luta ' + (k + 1); });
+  const mudouOrdem = () => { renum(); dirty(); el.querySelector('[data-out]').textContent = '↕️ Ordem mudada: clique em Salvar pra valer.'; };
+  box.addEventListener('click', e => {
+    const ed = e.target.closest('[data-ed]');
+    if (ed) { const f = ed.closest('.fight'); const abre = f.querySelector('.fedit').hidden; f.querySelectorAll('.fedit').forEach(x => { x.hidden = !abre; }); f.querySelectorAll('.fname').forEach(x => { x.hidden = abre; }); if (abre) f.querySelector('.fedit').focus(); return; }
+    const dl = e.target.closest('[data-del]');
+    if (dl) { const f = dl.closest('.fight'); const nm = [...f.querySelectorAll('.fedit')].map(x => x.value).join(' x ');
+      if (!confirm(`Excluir ${nm}?\nOs palpites dessa luta deixam de contar. Só vale depois de clicar em Salvar.`)) return;
+      f.remove(); renum(); dirty(); el.querySelector('[data-out]').textContent = `🗑️ ${nm} vai ser excluída quando você clicar em Salvar (recarregar a página desfaz).`; return; }
+    const b = e.target.closest('[data-mv]'); if (!b) return; const f = b.closest('.fight');
+    const alvo = +b.dataset.mv < 0 ? f.previousElementSibling : f.nextElementSibling; if (!alvo) return;
+    if (+b.dataset.mv < 0) box.insertBefore(f, alvo); else box.insertBefore(alvo, f); mudouOrdem(); f.scrollIntoView({ block: 'nearest' }); });
+  let arrastando = null;
+  box.addEventListener('dragstart', e => { const h = e.target.closest('.drag'); if (!h) return; arrastando = h.closest('.fight'); arrastando.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', ''); e.dataTransfer.setDragImage(arrastando, 30, 20); } catch (x) {} });
+  const limpa = () => box.querySelectorAll('.drop-above,.drop-below').forEach(x => x.classList.remove('drop-above', 'drop-below'));
+  box.addEventListener('dragover', e => { if (!arrastando) return; const f = e.target.closest('.fight'); if (!f || f === arrastando) return; e.preventDefault(); limpa(); const r = f.getBoundingClientRect(); f.classList.add(e.clientY < r.top + r.height / 2 ? 'drop-above' : 'drop-below'); });
+  box.addEventListener('drop', e => { if (!arrastando) return; e.preventDefault(); const f = e.target.closest('.fight'); if (f && f !== arrastando) { const r = f.getBoundingClientRect(); box.insertBefore(arrastando, e.clientY < r.top + r.height / 2 ? f : f.nextElementSibling); mudouOrdem(); } limpa(); });
+  box.addEventListener('input', e => { const x = e.target.closest('.fedit'); if (!x) return; const n = x.closest('.side').querySelector('.fname'); n.textContent = x.value; dirty(); });
+  box.addEventListener('dragend', () => { if (arrastando) arrastando.classList.remove('dragging'); arrastando = null; limpa(); });
   el.querySelector('[data-act="seq"]').onclick = () => {
     const [h, m] = el.querySelector('[data-seq-start]').value.split(':').map(Number); const gap = +el.querySelector('[data-seq-gap]').value || 30;
     if (isNaN(h)) return; const n = (ev.fights || []).length;
     // a lista começa pela principal, então a última linha é a primeira luta da noite
     // cada luta começa depois da anterior: luta de 5 rounds ocupa 40 min, as outras o intervalo escolhido
     let t = h * 60 + m;
-    for (let i = n - 1; i >= 0; i--) {
+    for (const i of ordem().reverse()) {
       el.querySelector(`[data-i="${i}"][data-k="t"]`).value = String(Math.floor(t % 1440 / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
       t += +el.querySelector(`[data-i="${i}"][data-k="rounds"]`).value === 5 ? 40 : gap;
     }
@@ -787,12 +847,15 @@ function eventCard(id, ev) {
   };
   const resKey = fs => JSON.stringify((fs || []).map(f => [f.id, f.w || '', f.m || '', f.r || 0]));
   el.querySelector('[data-act="save"]').onclick = async () => {
-    const fights = (ev.fights || []).map((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: f.a, b: f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && w !== 'nc' && m) o.m = m; if (w && w !== 'nc' && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
+    const ord = ordem(), reordenou = ord.length !== (ev.fights || []).length || ord.some((x, k) => x !== k);
+    const ev0 = ord.map(i => ev.fights[i]);
+    const fights = ord.map(i => [ev.fights[i], i]).map(([f, i]) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: (q('a') && q('a').value.trim()) || f.a, b: (q('b') && q('b').value.trim()) || f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && w !== 'nc' && m) o.m = m; if (w && w !== 'nc' && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
     const data = { fights, status: el.querySelector('[data-k="status"]').value, mc: Math.max(1, Math.min(15, +el.querySelector('[data-k="mc"]').value || 5)), resH: Math.max(1, Math.min(72, +el.querySelector('[data-k="resH"]').value || 12)), season: ev.season || new Date(ev.date || Date.now()).toISOString().slice(0, 7), poster: firebase.firestore.FieldValue.delete(), locks: locksOf(ev.date, fights), ...lockLists(locksOf(ev.date, fights)) };
     out.textContent = 'Salvando…'; let kb = 0;
-    try { const r = await saveImgs(id, img, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); const changed = resKey(ev.fights) !== resKey(fights); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB).`;
+    try { const r = await saveImgs(id, { poster: img.poster, fights: ord.map(i => img.fights[i] || {}) }, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); const changed = resKey(ev.fights) !== resKey(fights); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB).`;
       // resultado novo ou alterado: o ranking já sai junto, sem precisar de outro clique
       if (changed && fights.some(f => f.w)) await calc('✅ Salvo. ');
+      if ((reordenou || fights.some((f, k) => f.a !== ev0[k].a || f.b !== ev0[k].b)) && data.status !== 'done') { out.textContent += ' Lutas atualizadas, recarregando…'; setOpen(id, true); setTimeout(loadEvents, 900); return; }
       if (data.status === 'done' && ev.status !== 'done') { ev.status = 'done'; out.textContent += ' Evento encerrado: indo pra lista de Encerrados…'; el.classList.add('closing'); setTimeout(loadEvents, 1400); }
       else ev.status = data.status; }
     catch (e) { out.textContent = 'Erro: ' + e.message; }
