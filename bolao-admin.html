@@ -178,11 +178,72 @@
   @media (max-width: 560px) { .kpis, .quick { grid-template-columns: repeat(2, 1fr); } .tabs button { min-width: 74px; } }
   .gkcard { border-color: rgba(240,185,66,.4); } .gkout { margin-top: 10px; font-size: 14px; line-height: 1.6; } .gkcard a, .gkout a { color: var(--gold2); }
   .zebrabox { margin-top: 12px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.03); border: 1px solid var(--line); display: grid; gap: 8px; } .zebrabox textarea { min-height: 70px; }
+
+  /* ===== v5: a arte do evento vira o cenário (imagem protagonista) ===== */
+  .evhead.arte { min-height: 170px; background:
+      linear-gradient(90deg, rgba(8,13,20,.97) 0%, rgba(8,13,20,.86) 42%, rgba(8,13,20,.35) 75%, rgba(8,13,20,.15) 100%),
+      linear-gradient(0deg, rgba(8,13,20,.9), transparent 55%),
+      var(--poster) right 22% / cover no-repeat; }
+  .evhead.arte h3 { font-size: clamp(26px, 4.2vw, 40px); text-shadow: 0 3px 18px rgba(0,0,0,.8); max-width: 15em; }
+  .evcard.collapsed .evhead.arte { min-height: 132px; }
+  .evcard .poster.no-dup { display: none; }
+  .hfaces { position: absolute; right: 150px; bottom: -2px; display: flex; align-items: flex-end; pointer-events: none; }
+  .hfaces i { width: 92px; height: 92px; border-radius: 50%; background: #0b141e center/cover no-repeat; border: 3px solid var(--gold); box-shadow: 0 10px 26px rgba(0,0,0,.6); }
+  .hfaces i + i { margin-left: -18px; border-color: #7aa7ff; }
+  .hfaces b { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); font: 700 22px/1 Oswald, Impact, sans-serif; color: #fff; text-shadow: 0 2px 10px #000; }
+  .evhead.temfaces > .grow { padding-right: 190px; }
+  @media (max-width: 760px) { .hfaces { display: none; } .evhead.temfaces > .grow { padding-right: 0; } }
+
+  /* hero do Início com a arte + os rostos da luta principal */
+  .hero.arte { position: relative; overflow: hidden; min-height: 300px; display: flex; flex-direction: column; justify-content: flex-end; border-color: rgba(240,185,66,.45);
+    background: linear-gradient(0deg, rgba(8,13,20,.98) 8%, rgba(8,13,20,.55) 55%, rgba(8,13,20,.15)), var(--poster) center 25% / cover no-repeat; }
+  .hero > .pill { align-self: flex-start; }
+  .hero.arte h3 { font-size: clamp(32px, 6vw, 54px); line-height: .98; text-shadow: 0 4px 24px rgba(0,0,0,.85); max-width: 13em; }
+  .vsrow { display: flex; align-items: center; gap: 10px; margin: 4px 0 10px; min-width: 0; } .vsrow span { min-width: 0; overflow-wrap: anywhere; }
+  .vsrow i { width: 64px; height: 64px; border-radius: 50%; background: #0b141e center/cover no-repeat; border: 3px solid var(--gold); box-shadow: 0 8px 22px rgba(0,0,0,.55); flex: none; }
+  .vsrow i:last-of-type { border-color: #7aa7ff; }
+  .vsrow span { font: 700 15px/1.15 Oswald, Impact, sans-serif; text-transform: uppercase; } .vsrow em { font: 700 22px Oswald, Impact, sans-serif; color: var(--gold2); font-style: normal; }
+  .cdown { display: inline-flex; gap: 6px; margin: 2px 0 6px; } .cdown b { min-width: 52px; text-align: center; padding: 6px 4px; border-radius: 10px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.12); font: 700 26px/1 Oswald, Impact, sans-serif; color: var(--gold2); }
+  .cdown b small { display: block; font: 600 10px/1.4 Inter, system-ui, sans-serif; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .proxluta { margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.1); }
+
+  /* barra de salvar que acompanha a rolagem */
+  .savebar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 16px; border-radius: 16px;
+    background: #1a2636; border: 1px solid var(--gold); box-shadow: 0 16px 40px rgba(0,0,0,.6); max-width: calc(100% - 24px); }
+  .savebar span { font-size: 14px; } .savebar b { color: var(--gold2); }
+  .savebar[hidden] { display: none; }
+
+  /* celular: cabeçalho enxuto e abas embaixo, no alcance do dedão */
+  @media (max-width: 700px) {
+    .brand { padding: 10px 12px; border-radius: 16px; gap: 10px; } .brand .logo { width: 40px; height: 40px; font-size: 22px; border-radius: 12px; } .brand h1 { font-size: 20px; } .brand p { font-size: 12px; }
+    .tabs { position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 25; margin: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); gap: 4px; overflow: visible;
+      background: rgba(10,17,27,.96); backdrop-filter: blur(10px); border-top: 1px solid var(--line); }
+    .tabs button { flex: 1 1 0; min-width: 0; padding: 7px 2px; font-size: 10.5px; border-radius: 12px; min-height: 52px; }
+    .tabs button i { font-size: 19px; }
+    body { padding-bottom: 84px; }
+    .savebar { bottom: calc(76px + env(safe-area-inset-bottom)); }
+    .hero.arte { min-height: 340px; } .vsrow { gap: 7px; } .vsrow i { width: 46px; height: 46px; border-width: 2px; } .vsrow span { font-size: 13px; } .cdown b { min-width: 46px; font-size: 22px; }
+    .savebar { left: 10px; right: 10px; transform: none; max-width: none; } .savebar span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  }
+  /* nada vaza pro lado no celular */
+  .fights { grid-template-columns: minmax(0, 1fr); } .fight.vis { min-width: 0; }
+  .duo { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); } .side { min-width: 0; } .fname { overflow-wrap: anywhere; }
+  .side .row, .side > div { flex-wrap: wrap; justify-content: center; }
+  /* Início: o evento vem antes dos números */
+  #home { display: flex; flex-direction: column; } #home > .hero { order: -1; margin-bottom: 12px; }
+  @media (max-width: 700px) { .kpis { grid-template-columns: repeat(4, 1fr) !important; gap: 6px; } .kpis div { padding: 8px 4px; border-radius: 12px; } .kpis b { font-size: 22px; } .kpis small { font-size: 10px; line-height: 1.2; display: block; } }
+  /* dedo: alvos de toque de pelo menos 40 px */
+  @media (pointer: coarse) {
+    .mv { min-width: 38px; min-height: 38px; font-size: 14px; } .drag { display: none; }
+    [data-set], .lk { min-height: 40px; } .fight [data-set][data-k="r"] { min-width: 40px; }
+  }
+  :focus-visible { outline: 3px solid var(--gold2); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 </style>
 </head>
 <body>
 <main>
-  <header class="brand"><span class="logo">🏆</span><div><h1>Admin do Bolão</h1><p class="muted">MMA Ranking League · Rumo à Glória · <b class="ver">painel v4.76</b></p></div></header>
+  <header class="brand"><span class="logo">🏆</span><div><h1>Admin do Bolão</h1><p class="muted">MMA Ranking League · Rumo à Glória · <b class="ver">painel v5.0</b></p></div></header>
   <div class="msg" id="msg"></div>
 
   <section id="login" class="card">
@@ -193,6 +254,7 @@
 
   <section id="app" hidden>
     <div class="appbar"><span class="muted grow" id="who"></span><button class="ghost sm" id="btnOut">Sair</button></div>
+    <div class="savebar" id="savebar" hidden role="status"><span>● Mudanças não salvas em <b id="savebarEv"></b></span><button id="savebarBtn">💾 Salvar</button></div>
     <nav class="tabs" id="tabs">
       <button data-go="inicio"><i>🏠</i>Início</button><button data-go="eventos"><i>📋</i>Eventos</button><button data-go="criar"><i>➕</i>Criar</button>
       <button data-go="ranking"><i>🏆</i>Ranking</button><button data-go="ajustes"><i>⚙️</i>Ajustes</button><button data-go="denuncias"><i>🚩</i>Denúncias</button>
@@ -510,7 +572,9 @@ const parKey = f => [nomeLimpo(f.a), nomeLimpo(f.b)].sort().join('|');
 const ultKey = f => [nomeLimpo(f.a).split(' ').pop(), nomeLimpo(f.b).split(' ').pop()].sort().join('|');
 function planoUpd(ev, novas) {
   const velhas = (ev.fights || []).map(f => Object.assign({}, f)), usadas = new Set(); let maxN = velhas.reduce((m, f) => Math.max(m, +(String(f.id || '').replace(/\D/g, '')) || 0), 0);
-  const achar = n => { let k = velhas.findIndex((f, i) => !usadas.has(i) && parKey(f) === parKey(n)); if (k < 0) k = velhas.findIndex((f, i) => !usadas.has(i) && ultKey(f) === ultKey(n)); return k; };
+  const achar = n => { let k = velhas.findIndex((f, i) => !usadas.has(i) && parKey(f) === parKey(n)); if (k < 0) k = velhas.findIndex((f, i) => !usadas.has(i) && ultKey(f) === ultKey(n));
+    if (k < 0) k = velhas.findIndex((f, i) => !usadas.has(i) && [nomeLimpo(f.a), nomeLimpo(f.b)].some(x => x && (x === nomeLimpo(n.a) || x === nomeLimpo(n.b)))); // um dos dois lutadores igual (o outro mudou de nome ou foi trocado)
+    return k; };
   let atual = 0, novasN = 0; const fights = [];
   novas.forEach((n, pos) => { const k = achar(n);
     if (k >= 0) { usadas.add(k); const f = velhas[k]; const o = Object.assign({}, f, { a: n.a, b: n.b });
@@ -573,14 +637,34 @@ async function loadHome() {
     const season = new Date().toISOString().slice(0, 7); let se = null; try { const d = await db.collection('bolao_season').doc(season).get(); se = d.exists ? d.data() : null; } catch (e) { }
     const nr = nx ? (nx.fights || []).filter(f => f.w).length : 0;
     box.innerHTML = `<div class="kpis"><div><b>${up.length}</b><small>próximos</small></div><div><b>${live.length}</b><small>rolando agora</small></div><div><b>${np}</b><small>palpites no ${nx ? 'próximo' : '—'}</small></div><div><b>${se ? se.total : 0}</b><small>jogadores no mês</small></div></div>
-      ${nx ? `<div class="hero ${stOf(nx)}"><span class="pill ${stOf(nx) === 'live' ? 'st-closed' : 'st-open'}">${stOf(nx) === 'live' ? '🔴 Rolando agora' : '⏳ Próximo evento'}</span><h3>${esc(nx.name)}</h3>
+      ${nx ? `<div class="hero ${stOf(nx)}" data-hero><span class="pill ${stOf(nx) === 'live' ? 'st-closed' : 'st-open'}">${stOf(nx) === 'live' ? '🔴 Rolando agora' : '⏳ Próximo evento'}</span><h3>${esc(nx.name)}</h3>
+        ${(nx.fights || [])[0] ? `<div class="vsrow" data-vs><i data-fa></i><span>${esc(nx.fights[0].a)}</span><em>×</em><span>${esc(nx.fights[0].b)}</span><i data-fb></i></div>` : ''}
+        ${stOf(nx) === 'up' ? `<div class="cdown" data-cd="${nx.lock}"></div>` : (() => { const px = (nx.fights || []).slice().reverse().find(f => !f.w); return px ? `<div class="proxluta">🥊 Próxima sem resultado: <b>${esc(px.a)} x ${esc(px.b)}</b>${px.t ? ` <span class="muted">· ${esc(px.t)}</span>` : ''}</div>` : ''; })()}
         <p class="muted">${esc(fmtDay(nx.date))} · ${(nx.fights || []).length} lutas · ${stOf(nx) === 'live' ? `<b>${nr} de ${(nx.fights || []).length}</b> resultados lançados` : `fecha em <b>${cdown(nx.lock - Date.now())}</b>`} · <b>${np}</b> palpites</p>
         <div class="row"><button data-go="eventos" data-ev="${nx._id}">${stOf(nx) === 'live' ? '🏁 Lançar resultados' : '✏️ Abrir o card'}</button><button class="ghost" data-go="criar">➕ Criar outro evento</button></div></div>` : `<div class="hero"><h3>Nenhum evento aberto</h3><p class="muted">Crie o próximo card pra galera palpitar.</p><button data-go="criar">➕ Criar evento</button></div>`}
       ${up.length > (live.length ? 0 : 1) ? `<h2>⏳ Na fila</h2>${up.slice(live.length ? 0 : 1).map(e => `<button class="evline" data-go="eventos" data-ev="${e._id}"><span class="cal"><b>${new Date(e.date).getDate()}</b><small>${new Date(e.date).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</small></span><span class="grow"><b>${esc(e.name)}</b><small class="muted">${(e.fights || []).length} lutas · fecha em ${cdown(e.lock - Date.now())}</small></span><i>›</i></button>`).join('')}` : ''}
-      ${last ? `<h2>✅ Último encerrado</h2><div class="card"><b>${esc(last.name)}</b> <span class="muted">· ${esc(fmtDay(last.date))} · ${top ? top.total : 0} jogadores</span>${podiumH(top && top.list)}<div class="row"><button class="ghost" data-go="ranking">🏆 Ver ranking completo</button><button class="ghost" data-go="eventos" data-ev="${last._id}">Abrir evento</button></div></div>` : ''}
+      ${last ? `<h2>✅ Último encerrado</h2><div class="card"><b>${esc(last.name)}</b> <span class="muted">· ${esc(fmtDay(last.date))} · ${top ? (top.total ?? (top.list || []).length) : 0} jogadores</span>${podiumH(top && top.list)}<div class="row"><button class="ghost" data-go="ranking">🏆 Ver ranking completo</button><button class="ghost" data-go="eventos" data-ev="${last._id}">Abrir evento</button></div></div>` : ''}
       <h2>⚡ Atalhos</h2><div class="quick"><button data-go="criar"><i>📥</i>Vários eventos</button><button data-go="ranking"><i>🏆</i>Rankings</button><button data-go="ajustes"><i>📣</i>Aviso no jogo</button><button data-go="denuncias"><i>🚩</i>Denúncias</button></div>`;
+    if (nx) heroArte(box, nx);
   } catch (e) { box.innerHTML = '<p class="muted">Erro ao carregar: ' + esc(e.message) + '</p>'; }
 }
+// arte do próximo evento no Início: pôster de fundo + rostos da luta principal + contagem regressiva
+async function heroArte(box, nx) {
+  const h = box.querySelector('[data-hero]'); if (!h) return;
+  let poster = nx.poster || '', f0 = (nx.fights || [])[0] || {}, A = f0.imgA || '', B = f0.imgB || '';
+  if (nx.imgAt && (!poster || !A || !B)) { try { const d = await imgRef(nx._id).get(); const x = d.exists ? d.data() : {}; poster = poster || x.poster || ''; const g = (x.f || {})[f0.id] || {}; A = A || g.a || ''; B = B || g.b || ''; } catch (e) { } }
+  if (poster) { h.classList.add('arte'); h.style.setProperty('--poster', `url("${poster}")`); }
+  const fa = h.querySelector('[data-fa]'), fb = h.querySelector('[data-fb]');
+  if (fa) { fa.style.backgroundImage = A ? `url("${A}")` : ''; fa.hidden = !A; } if (fb) { fb.style.backgroundImage = B ? `url("${B}")` : ''; fb.hidden = !B; }
+  const cd = h.querySelector('[data-cd]'); if (cd) { const tick = () => { if (!document.body.contains(cd)) return clearInterval(t); const ms = +cd.dataset.cd - Date.now(); if (ms <= 0) { cd.innerHTML = '<b>FECHOU</b>'; return clearInterval(t); }
+    const p = [[Math.floor(ms / 864e5), 'dias'], [Math.floor(ms % 864e5 / 36e5), 'horas'], [Math.floor(ms % 36e5 / 6e4), 'min'], [Math.floor(ms % 6e4 / 1e3), 'seg']];
+    cd.innerHTML = p.map(([v, l]) => `<b>${String(v).padStart(2, '0')}<small>${l}</small></b>`).join(''); }; const t = setInterval(tick, 1000); tick(); }
+}
+// barra de salvar: aparece quando algum card tem mudança não salva
+setInterval(() => { const c = [...document.querySelectorAll('.evcard')].find(x => { const u = x.querySelector('[data-unsaved]'); return u && !u.hidden; });
+  const bar = $('savebar'); if (!bar) return; bar.hidden = !c; if (c) { $('savebarEv').textContent = (c.querySelector('.evhead h3') || {}).textContent || 'evento'; bar.dataset.id = c.dataset.id; } }, 700);
+document.addEventListener('click', e => { if (e.target.closest('#savebarBtn')) { const c = document.querySelector(`.evcard[data-id="${$('savebar').dataset.id}"]`); const b = c && c.querySelector('[data-act="save"]'); if (b) { c.classList.remove('collapsed'); b.click(); } } });
+window.addEventListener('beforeunload', e => { if (!$('savebar').hidden) { e.preventDefault(); e.returnValue = ''; } });
 // ranking: escolhe evento, mês ou geral e vê a tabela inteira (até 100)
 let rkSel = null;
 async function loadRank() {
@@ -648,7 +732,7 @@ function eventCard(id, ev) {
   const pill = { open: ['🟢', 'Aberto', 'st-open'], closed: ['🔒', 'Fechado', 'st-closed'], done: ['✅', 'Encerrado', 'st-done'] }[stt] || ['🟢', 'Aberto', 'st-open'];
   el.className = 'card evcard ' + pill[2]; el.dataset.id = id;
   if (!isOpen(id, ev)) el.classList.add('collapsed');
-  el.innerHTML = `<div class="evhead" data-toggle title="Clique pra abrir ou fechar"><span class="chev">▾</span><div class="grow"><span class="pill ${pill[2]}">${pill[0]} ${pill[1]}</span><span class="muted"> ${esc(fmtDay(ev.date))}</span><h3>${esc(ev.name)}</h3>
+  el.innerHTML = `<div class="evhead" data-toggle title="Clique pra abrir ou fechar"><div class="hfaces" data-hfaces hidden><i></i><i></i><b>VS</b></div><span class="chev">▾</span><div class="grow"><span class="pill ${pill[2]}">${pill[0]} ${pill[1]}</span><span class="muted"> ${esc(fmtDay(ev.date))}</span><h3>${esc(ev.name)}</h3>
       <div class="progrow"><span class="muted">🏁 Resultados lançados: <b>${nr} de ${F0.length}</b> lutas${nr === 0 ? ' (o evento ainda não começou)' : nr === F0.length ? ' ✅ todas' : ''}</span><div class="prog" title="Quantas lutas já têm vencedor marcado"><i style="width:${F0.length ? Math.round(100 * nr / F0.length) : 0}%"></i></div></div></div>
       <label class="stsel"><span>Status</span><select data-k="status" style="width:auto"><option value="open">Aberto</option><option value="closed">Fechado</option><option value="done">Encerrado</option></select></label></div>
     <p class="muted donehint" data-donehint hidden>✅ Ao salvar como <b>Encerrado</b>, este evento sai daqui e vai pra lista compacta de Encerrados (os jogadores veem só o resumo).</p>
@@ -722,6 +806,10 @@ function eventCard(id, ev) {
       if (k === 'm') b.disabled = !(w === 'a' || w === 'b'); if (k === 'r') { b.disabled = !(m === 'ko' || m === 'sub'); b.hidden = +b.dataset.v > rd; } }); });
   const paint = () => {
     const p = el.querySelector('[data-poster]'); p.hidden = !img.poster; if (img.poster) p.src = img.poster;
+    const hd = el.querySelector('.evhead'); hd.classList.toggle('arte', !!img.poster); p.classList.toggle('no-dup', !!img.poster);
+    hd.style.setProperty('--poster', img.poster ? `url("${img.poster}")` : 'none');
+    const hf = el.querySelector('[data-hfaces]'), m0 = img.fights[0] || {};
+    hf.hidden = !(m0.imgA && m0.imgB); hd.classList.toggle('temfaces', !hf.hidden); if (!hf.hidden) { const [ia, ib] = hf.querySelectorAll('i'); ia.style.backgroundImage = `url("${m0.imgA}")`; ib.style.backgroundImage = `url("${m0.imgB}")`; }
     el.querySelector('[data-act="noposter"]').hidden = !img.poster;
     el.querySelectorAll('[data-face]').forEach(d => { const s = img.fights[+d.dataset.i]['img' + d.dataset.face.toUpperCase()]; d.style.backgroundImage = s ? `url("${s}")` : ''; d.classList.toggle('has', !!s); });
   };
