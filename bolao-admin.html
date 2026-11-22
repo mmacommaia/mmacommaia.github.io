@@ -101,6 +101,8 @@
   .lk.fechada { border-color: #2e7d32; background: rgba(46,125,50,.18); color: #a5d6a7; }
   .lk:disabled { cursor: default; opacity: .8; }
   .lk.all { margin-left: 8px; }
+  .sobrebox textarea { width: 100%; font: 13px/1.4 ui-monospace, Consolas, monospace; }
+  .zebradet { margin-top: 8px; } .zebradet summary { cursor: pointer; }
   .fno { font-size: 14px; text-transform: uppercase; color: var(--gold2); margin-right: auto; letter-spacing: .05em; }
   .chip { background: #1a2b3f; color: var(--ink); border: 1px solid #2a4260; padding: 6px 11px; font-size: 13px; font-weight: 700; border-radius: 999px; }
   .chip.sm { padding: 5px 9px; font-size: 12.5px; }
@@ -657,9 +659,14 @@ function eventCard(id, ev) {
     <div class="row"><span class="muted">⏳ Prometo os pontos em até</span><input type="number" data-k="resH" min="1" max="72" value="${ev.resH || 12}" style="width:70px!important"><span class="muted">horas depois da última luta (aparece pro jogador no app)</span></div>
     <div class="row"><button class="ghost" data-act="poster">🖼️ Arte do evento</button><button class="ghost" data-act="noposter" hidden>Tirar arte</button></div>
     <div class="row" style="margin-top:8px"><span class="muted">⏰ Horários em sequência: 1ª luta do card (a de baixo) às</span><input type="time" class="time" data-seq-start value="20:00"><span class="muted">a cada</span><input type="number" class="time" data-seq-gap value="30" min="5" step="5" style="width:70px!important"><span class="muted">min (lutas de 5 rounds: 40 min)</span><button class="ghost" data-act="seq">Preencher</button></div>
+    <div class="zebrabox sobrebox"><b>♻️ Sobrescrever evento</b> <span class="muted">cole o bloco do evento (com a linha <b>===</b> no topo ou só as lutas). Atualiza <b>este</b> evento: nome, data, horário de fechar e lutas. Lutas que já existem mantêm resultado, fotos e palpites; peso, horário e zebra (pelas odds) entram sozinhos.</span>
+      <textarea data-sobtxt rows="6" spellcheck="false" placeholder="=== UFC Arábia Saudita: Adesanya x Magomedov | 2026-12-05 | 17:15&#10;Israel Adesanya x Shara Magomedov - 17:15 | Peso-Médio | -165 / +140&#10;Ian Machado Garry x Yaroslav Amosov - 16:50 | Peso Meio-Médio | -190 / +160"></textarea>
+      <div class="muted" style="display:flex;gap:8px;align-items:center;justify-content:flex-start;margin:6px 0;text-align:left"><input type="checkbox" data-sobdel checked style="width:auto;margin:0;flex:none"><span>Tirar do card as lutas que não estão na lista</span></div>
+      <div class="row"><button class="ghost" data-act="sobprev">👀 Conferir</button><button data-act="sobgo" hidden>♻️ Sobrescrever</button><span class="muted grow" data-sobout></span></div></div>
+    <details class="zebradet"><summary class="muted">🦓 Zebras na mão (só se precisar; as odds do bloco acima já marcam sozinhas)</summary>
     <div class="zebrabox"><b>🦓 Zebras do evento</b> <span class="muted">cole os nomes de quem é zebra (um por linha ou separados por vírgula, pode ser só o sobrenome) ou a lista de odds do card inteiro: eu marco quem tem a odd maior (+).</span>
       <textarea data-zebras rows="3" placeholder="Ex.: Islam Dulatov&#10;Chokheli, Stirling"></textarea>
-      <div class="row"><button class="ghost" data-act="zebras">🦓 Marcar zebras</button><button class="ghost" data-act="zebraclr">Tirar todas</button><span class="muted grow" data-zout></span></div></div>
+      <div class="row"><button class="ghost" data-act="zebras">🦓 Marcar zebras</button><button class="ghost" data-act="zebraclr">Tirar todas</button><span class="muted grow" data-zout></span></div></div></details>
     </details>
     <div class="fights">${(ev.fights || []).map((f, i) => `<div class="fight vis" data-fi="${i}">
       <div class="ftop"><span class="mvbox"><span class="drag" draggable="true" title="Segure e arraste pra mudar a ordem">⠿</span><button type="button" class="mv" data-mv="-1" title="Subir">▲</button><button type="button" class="mv" data-mv="1" title="Descer">▼</button><button type="button" class="mv" data-ed title="Corrigir os nomes">✏️</button><button type="button" class="mv" data-del title="Excluir esta luta">🗑️</button></span><span class="fno">${i === 0 ? '⭐ Luta principal' : i === 1 ? '⭐ Co-principal' : 'Luta ' + (i + 1)}</span><button type="button" class="lk" data-lk title="Fecha os palpites desta luta e das que vêm antes dela na noite (as de baixo)"></button>
@@ -776,6 +783,33 @@ function eventCard(id, ev) {
   el.querySelector('[data-lkall]').onclick = async () => { if (!confirm('Fechar os palpites de TODAS as lutas deste evento agora?')) return; const agora = Date.now();
     ev.fights.forEach(x => { if (!((ev.locks || {})[x.id] <= agora)) x.fechou = agora; }); await gravaLocks('🔒 Todos os palpites deste evento foram fechados.'); };
   lkTxt(); const lkTimer = setInterval(() => { if (!document.body.contains(el)) return clearInterval(lkTimer); lkTxt(); }, 30000);
+  // ♻️ sobrescrever ESTE evento com um bloco colado (não cria evento novo)
+  let sobPlano = null;
+  const sobLer = () => { const txt = el.querySelector('[data-sobtxt]').value.trim(); if (!txt) return { err: 'Cole o bloco do evento primeiro.' };
+    if (/^\s*===/.test(txt)) { const b = parseBulk(txt)[0]; if (!b) return { err: 'Não entendi o bloco.' }; if (b.err) return { err: 'Linha === : ' + b.err }; return b; }
+    const fights = parseFights(txt); if (!fights.length || fights.includes(null)) return { err: 'Confira: uma luta por linha, "Lutador A x Lutador B".' }; return { fights }; };
+  el.querySelector('[data-act="sobprev"]').onclick = () => { const out = el.querySelector('[data-sobout]'), go = el.querySelector('[data-act="sobgo"]'); go.hidden = true; sobPlano = null;
+    if (!el.querySelector('[data-unsaved]').hidden) { out.textContent = '⚠️ Tem mudança não salva nas lutas. Salve antes (ou recarregue a página pra descartar).'; return; }
+    const b = sobLer(); if (b.err) { out.textContent = '❌ ' + b.err; return; }
+    const p = planoUpd(ev, b.fights), tira = el.querySelector('[data-sobdel]').checked;
+    const comRes = p.sobra.filter(f => f.w);
+    const partes = [];
+    if (b.name && b.name !== ev.name) partes.push(`nome: "${b.name}"`);
+    if (b.date) partes.push(`data ${b.date}, palpites fecham ${b.hm}`);
+    partes.push(`${p.atual} luta(s) atualizada(s)`, `${p.novasN} nova(s)`);
+    if (p.sobra.length) partes.push(tira ? `${p.sobra.length} sai(em): ${p.sobra.map(f => f.a + ' x ' + f.b).join(', ')}` : `${p.sobra.length} fica(m) no fim: ${p.sobra.map(f => f.a + ' x ' + f.b).join(', ')}`);
+    out.innerHTML = esc('Vou fazer: ' + partes.join(' · ') + '.') + (tira && comRes.length ? `<br><b style="color:#ffb3a8">⚠️ ${esc(comRes.map(f => f.a + ' x ' + f.b).join(', '))} já tem resultado e vai sair. Desmarque a caixinha se não quiser.</b>` : '');
+    sobPlano = { b, p, tira }; go.hidden = false; };
+  el.querySelector('[data-act="sobgo"]').onclick = async () => { if (!sobPlano) return; const { b, p, tira } = sobPlano; const out = el.querySelector('[data-sobout]');
+    const sai = new Set(tira ? p.sobra.map(f => f.id) : []); const fights = p.fights.filter(f => !sai.has(f.id));
+    if (!fights.length) { out.textContent = 'O card ficaria sem lutas. Confere o bloco.'; return; }
+    const upd = { fights };
+    if (b.name) upd.name = b.name;
+    if (b.date) { upd.date = brt(b.date + 'T12:00'); upd.lock = b.lock; upd.season = b.date.slice(0, 7); }
+    const locks = locksOf(upd.date || ev.date, fights); Object.assign(upd, { locks, ...lockLists(locks) });
+    out.textContent = 'Gravando…'; el.querySelector('[data-act="sobgo"]').disabled = true;
+    try { await db.collection('bolao').doc(id).set(upd, { merge: true }); out.textContent = '✅ Evento sobrescrito. Recarregando…'; setOpen(id, true); setTimeout(loadEvents, 700); }
+    catch (e) { out.textContent = 'Não gravou: ' + e.message; el.querySelector('[data-act="sobgo"]').disabled = false; } };
   el.querySelector('[data-act="seq"]').onclick = () => {
     const [h, m] = el.querySelector('[data-seq-start]').value.split(':').map(Number); const gap = +el.querySelector('[data-seq-gap]').value || 30;
     if (isNaN(h)) return; const n = (ev.fights || []).length;
