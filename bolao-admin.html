@@ -92,17 +92,6 @@
   .fight.vis.has-w { border-color: rgba(63,207,142,.45); }
   .fight.vis[data-w="d"] { border-color: rgba(240,185,66,.6); } .fight.vis[data-w="nc"] { opacity: .55; }
   .ftop { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
-  .mvbox { display: inline-flex; align-items: center; gap: 2px; margin-right: 6px; }
-  .drag { cursor: grab; font-size: 20px; line-height: 1; padding: 2px 6px; color: var(--gold2); user-select: none; }
-  .mv { background: transparent; border: 1px solid #2c3a4a; color: #ccc; border-radius: 6px; padding: 1px 6px; font-size: 11px; cursor: pointer; }
-  .fedit { width: 100%; max-width: 260px; margin: 4px auto; display: block; text-align: center; background: #0d141c; border: 1px solid var(--gold2); color: #fff; border-radius: 8px; padding: 6px; font: 600 15px system-ui, sans-serif; }
-  .fight.dragging { opacity: .35; } .fight.drop-above { box-shadow: 0 -4px 0 var(--gold2); } .fight.drop-below { box-shadow: 0 4px 0 var(--gold2); }
-  .lk { border: 1px solid #c0392b; background: rgba(192,57,43,.15); color: #ffb3a8; border-radius: 999px; padding: 4px 10px; font: 700 12px system-ui, sans-serif; cursor: pointer; margin-right: 6px; white-space: nowrap; }
-  .lk.fechada { border-color: #2e7d32; background: rgba(46,125,50,.18); color: #a5d6a7; }
-  .lk:disabled { cursor: default; opacity: .8; }
-  .lk.all { margin-left: 8px; }
-  .sobrebox textarea { width: 100%; font: 13px/1.4 ui-monospace, Consolas, monospace; }
-  .zebradet { margin-top: 8px; } .zebradet summary { cursor: pointer; }
   .fno { font-size: 14px; text-transform: uppercase; color: var(--gold2); margin-right: auto; letter-spacing: .05em; }
   .chip { background: #1a2b3f; color: var(--ink); border: 1px solid #2a4260; padding: 6px 11px; font-size: 13px; font-weight: 700; border-radius: 999px; }
   .chip.sm { padding: 5px 9px; font-size: 12.5px; }
@@ -178,72 +167,11 @@
   @media (max-width: 560px) { .kpis, .quick { grid-template-columns: repeat(2, 1fr); } .tabs button { min-width: 74px; } }
   .gkcard { border-color: rgba(240,185,66,.4); } .gkout { margin-top: 10px; font-size: 14px; line-height: 1.6; } .gkcard a, .gkout a { color: var(--gold2); }
   .zebrabox { margin-top: 12px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.03); border: 1px solid var(--line); display: grid; gap: 8px; } .zebrabox textarea { min-height: 70px; }
-
-  /* ===== v5: a arte do evento vira o cenário (imagem protagonista) ===== */
-  .evhead.arte { min-height: 170px; background:
-      linear-gradient(90deg, rgba(8,13,20,.97) 0%, rgba(8,13,20,.86) 42%, rgba(8,13,20,.35) 75%, rgba(8,13,20,.15) 100%),
-      linear-gradient(0deg, rgba(8,13,20,.9), transparent 55%),
-      var(--poster) right 22% / cover no-repeat; }
-  .evhead.arte h3 { font-size: clamp(26px, 4.2vw, 40px); text-shadow: 0 3px 18px rgba(0,0,0,.8); max-width: 15em; }
-  .evcard.collapsed .evhead.arte { min-height: 132px; }
-  .evcard .poster.no-dup { display: none; }
-  .hfaces { position: absolute; right: 150px; bottom: -2px; display: flex; align-items: flex-end; pointer-events: none; }
-  .hfaces i { width: 92px; height: 92px; border-radius: 50%; background: #0b141e center/cover no-repeat; border: 3px solid var(--gold); box-shadow: 0 10px 26px rgba(0,0,0,.6); }
-  .hfaces i + i { margin-left: -18px; border-color: #7aa7ff; }
-  .hfaces b { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); font: 700 22px/1 Oswald, Impact, sans-serif; color: #fff; text-shadow: 0 2px 10px #000; }
-  .evhead.temfaces > .grow { padding-right: 190px; }
-  @media (max-width: 760px) { .hfaces { display: none; } .evhead.temfaces > .grow { padding-right: 0; } }
-
-  /* hero do Início com a arte + os rostos da luta principal */
-  .hero.arte { position: relative; overflow: hidden; min-height: 300px; display: flex; flex-direction: column; justify-content: flex-end; border-color: rgba(240,185,66,.45);
-    background: linear-gradient(0deg, rgba(8,13,20,.98) 8%, rgba(8,13,20,.55) 55%, rgba(8,13,20,.15)), var(--poster) center 25% / cover no-repeat; }
-  .hero > .pill { align-self: flex-start; }
-  .hero.arte h3 { font-size: clamp(32px, 6vw, 54px); line-height: .98; text-shadow: 0 4px 24px rgba(0,0,0,.85); max-width: 13em; }
-  .vsrow { display: flex; align-items: center; gap: 10px; margin: 4px 0 10px; min-width: 0; } .vsrow span { min-width: 0; overflow-wrap: anywhere; }
-  .vsrow i { width: 64px; height: 64px; border-radius: 50%; background: #0b141e center/cover no-repeat; border: 3px solid var(--gold); box-shadow: 0 8px 22px rgba(0,0,0,.55); flex: none; }
-  .vsrow i:last-of-type { border-color: #7aa7ff; }
-  .vsrow span { font: 700 15px/1.15 Oswald, Impact, sans-serif; text-transform: uppercase; } .vsrow em { font: 700 22px Oswald, Impact, sans-serif; color: var(--gold2); font-style: normal; }
-  .cdown { display: inline-flex; gap: 6px; margin: 2px 0 6px; } .cdown b { min-width: 52px; text-align: center; padding: 6px 4px; border-radius: 10px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.12); font: 700 26px/1 Oswald, Impact, sans-serif; color: var(--gold2); }
-  .cdown b small { display: block; font: 600 10px/1.4 Inter, system-ui, sans-serif; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-  .proxluta { margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.1); }
-
-  /* barra de salvar que acompanha a rolagem */
-  .savebar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 16px; border-radius: 16px;
-    background: #1a2636; border: 1px solid var(--gold); box-shadow: 0 16px 40px rgba(0,0,0,.6); max-width: calc(100% - 24px); }
-  .savebar span { font-size: 14px; } .savebar b { color: var(--gold2); }
-  .savebar[hidden] { display: none; }
-
-  /* celular: cabeçalho enxuto e abas embaixo, no alcance do dedão */
-  @media (max-width: 700px) {
-    .brand { padding: 10px 12px; border-radius: 16px; gap: 10px; } .brand .logo { width: 40px; height: 40px; font-size: 22px; border-radius: 12px; } .brand h1 { font-size: 20px; } .brand p { font-size: 12px; }
-    .tabs { position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 25; margin: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); gap: 4px; overflow: visible;
-      background: rgba(10,17,27,.96); backdrop-filter: blur(10px); border-top: 1px solid var(--line); }
-    .tabs button { flex: 1 1 0; min-width: 0; padding: 7px 2px; font-size: 10.5px; border-radius: 12px; min-height: 52px; }
-    .tabs button i { font-size: 19px; }
-    body { padding-bottom: 84px; }
-    .savebar { bottom: calc(76px + env(safe-area-inset-bottom)); }
-    .hero.arte { min-height: 340px; } .vsrow { gap: 7px; } .vsrow i { width: 46px; height: 46px; border-width: 2px; } .vsrow span { font-size: 13px; } .cdown b { min-width: 46px; font-size: 22px; }
-    .savebar { left: 10px; right: 10px; transform: none; max-width: none; } .savebar span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  }
-  /* nada vaza pro lado no celular */
-  .fights { grid-template-columns: minmax(0, 1fr); } .fight.vis { min-width: 0; }
-  .duo { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); } .side { min-width: 0; } .fname { overflow-wrap: anywhere; }
-  .side .row, .side > div { flex-wrap: wrap; justify-content: center; }
-  /* Início: o evento vem antes dos números */
-  #home { display: flex; flex-direction: column; } #home > .hero { order: -1; margin-bottom: 12px; }
-  @media (max-width: 700px) { .kpis { grid-template-columns: repeat(4, 1fr) !important; gap: 6px; } .kpis div { padding: 8px 4px; border-radius: 12px; } .kpis b { font-size: 22px; } .kpis small { font-size: 10px; line-height: 1.2; display: block; } }
-  /* dedo: alvos de toque de pelo menos 40 px */
-  @media (pointer: coarse) {
-    .mv { min-width: 38px; min-height: 38px; font-size: 14px; } .drag { display: none; }
-    [data-set], .lk { min-height: 40px; } .fight [data-set][data-k="r"] { min-width: 40px; }
-  }
-  :focus-visible { outline: 3px solid var(--gold2); outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 </style>
 </head>
 <body>
 <main>
-  <header class="brand"><span class="logo">🏆</span><div><h1>Admin do Bolão</h1><p class="muted">MMA Ranking League · Rumo à Glória · <b class="ver">painel v5.0</b></p></div></header>
+  <header class="brand"><span class="logo">🏆</span><div><h1>Admin do Bolão</h1><p class="muted">MMA Ranking League · Rumo à Glória · <b class="ver">painel v5.19</b></p></div></header>
   <div class="msg" id="msg"></div>
 
   <section id="login" class="card">
@@ -254,16 +182,15 @@
 
   <section id="app" hidden>
     <div class="appbar"><span class="muted grow" id="who"></span><button class="ghost sm" id="btnOut">Sair</button></div>
-    <div class="savebar" id="savebar" hidden role="status"><span>● Mudanças não salvas em <b id="savebarEv"></b></span><button id="savebarBtn">💾 Salvar</button></div>
     <nav class="tabs" id="tabs">
       <button data-go="inicio"><i>🏠</i>Início</button><button data-go="eventos"><i>📋</i>Eventos</button><button data-go="criar"><i>➕</i>Criar</button>
-      <button data-go="ranking"><i>🏆</i>Ranking</button><button data-go="ajustes"><i>⚙️</i>Ajustes</button><button data-go="denuncias"><i>🚩</i>Denúncias</button>
+      <button data-go="ranking"><i>🏆</i>Ranking</button><button data-go="ajustes"><i>⚙️</i>Ajustes</button><button data-go="denuncias"><i>🚩</i>Denúncias</button><button data-go="erros"><i>🐞</i>Erros</button>
     </nav>
     <div class="pane" data-pane="inicio"><div id="home"><p class="muted">Carregando…</p></div></div>
     <div class="pane" data-pane="eventos" hidden><h2>📋 Eventos <span class="muted hint">clique no nome do evento pra abrir ou fechar</span></h2><div id="events"><p class="muted">Carregando…</p></div></div>
     <div class="pane" data-pane="criar" hidden><h2>➕ Criar eventos</h2>
     <details class="card newbox" id="bulkSec" open><summary><b>📥 Vários eventos de uma vez</b> <span class="muted">cole a lista que o Claude te mandar</span></summary>
-      <p class="muted">Um evento por bloco. A 1ª linha do bloco começa com <b>===</b>: nome | data (AAAA-MM-DD) | hora que os palpites fecham (Brasília). Depois, uma luta por linha (a principal primeiro), com horário, peso e odds opcionais. <b>Se o evento já existir (mesmo nome), ele é atualizado</b>: lutas que já estão lá mantêm resultado, fotos e palpites; as novas entram; a ordem segue a lista.</p>
+      <p class="muted">Um evento por bloco. A 1ª linha do bloco começa com <b>===</b>: nome | data (AAAA-MM-DD) | hora que os palpites fecham (Brasília). Depois, uma luta por linha (a principal primeiro), com horário opcional no fim.</p>
       <textarea id="bulkTxt" rows="8" spellcheck="false" placeholder="=== UFC 331: Topuria x Holloway | 2026-11-29 | 23:00&#10;Ilia Topuria x Max Holloway - 01:00&#10;Jéssica Andrade x Zhang Weili - 00:30&#10;&#10;=== UFC Fight Night: Moreno x Royval | 2026-12-06 | 20:00&#10;Brandon Moreno x Brandon Royval"></textarea>
       <div class="row" style="margin-top:8px"><button class="ghost" id="bulkPrev">👀 Conferir</button><button id="bulkGo" hidden>Criar todos</button></div>
       <div class="muted" id="bulkOut"></div>
@@ -320,6 +247,9 @@
     </div>
     </div>
     <div class="pane" data-pane="denuncias" hidden><h2>🚩 Denúncias da Arena</h2><div id="reports"><p class="muted">Carregando…</p></div></div>
+    <div class="pane" data-pane="erros" hidden><h2>🐞 Erros reportados <span class="muted hint">o "Reportar erro" dos jogadores (v5.19+)</span></h2>
+      <div class="row"><button class="ghost sm" id="bugsReload">🔄 Atualizar</button><span class="muted grow" id="bugsInfo"></span></div>
+      <div id="bugsTop"></div><div id="bugs"><p class="muted">Carregando…</p></div></div>
   </section>
 </main>
 
@@ -486,7 +416,7 @@ $('btnLogin').onclick = async () => { say('Entrando…'); try { await auth.signI
 $('btnOut').onclick = () => auth.signOut();
 auth.onAuthStateChanged(u => {
   const ok = u && !u.isAnonymous; $('login').hidden = !!ok; $('app').hidden = !ok;
-  if (ok) { $('who').textContent = 'Logado como ' + u.email; loadEvents(); loadReports(); loadCfg(); go(lsGet('adm_tab', 'inicio')); }
+  if (ok) { $('who').textContent = 'Logado como ' + u.email; loadEvents(); loadReports(); loadBugs(); loadCfg(); go(lsGet('adm_tab', 'inicio')); }
 });
 
 // horário de Brasília (UTC-3) → milissegundos
@@ -496,7 +426,6 @@ const brt = v => { if (!v) return 0; const [d, h] = v.split('T'); const [Y, M, D
 function locksOf(date, fights) {
   const d = new Date(date), late = fights.some(f => parseInt(f.t || '') >= 12), o = {};
   for (const f of fights) { if (!f.t) continue; const [hh, mm] = f.t.split(':').map(Number); if (isNaN(hh)) continue; let ms = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), hh + 3, mm || 0); if (hh < 12 && late) ms += 864e5; o[f.id] = ms; }
-  for (const f of fights) if (f.fechou) o[f.id] = Math.min(o[f.id] || Infinity, f.fechou); // 🔒 fechada na mão pelo admin
   return o;
 }
 // mesma coisa em fila (ordem de início), que é o formato que as regras do banco conseguem conferir rápido
@@ -518,7 +447,7 @@ const fmtBrt = ms => { if (!ms) return '—'; const d = new Date(ms - 3 * 3600e3
 // odds no fim da linha ("A x B - 16:50 | +120 / -145") ou junto do nome ("A (+120) x B (-145)"): a zebra é quem tem a odd maior
 const parseFights = txt => {
   const L = String(txt || '').split('\n').map(l => l.trim()).filter(Boolean), odds = [];
-  const clean = L.map(l => { let o = null; const m = l.match(/\s*\|\s*([+-]?\d{2,4})\s*[\/|x]\s*([+-]?\d{2,4})\s*(?=$|\|)/i);
+  const clean = L.map(l => { let o = null; const m = l.match(/\s*\|\s*([+-]?\d{2,4})\s*[\/|x]\s*([+-]?\d{2,4})\s*$/i);
     if (m) { o = [+m[1], +m[2]]; l = l.slice(0, m.index); }
     else { const n = [...l.matchAll(/\s*\(([+-]\d{2,4})\)/g)]; if (n.length === 2) { o = [+n[0][1], +n[1][1]]; l = l.replace(/\s*\([+-]\d{2,4}\)/g, ''); } }
     odds.push(o); return l; });
@@ -526,25 +455,7 @@ const parseFights = txt => {
   F.forEach((f, i) => { const o = odds[i]; if (f && o && o[0] !== o[1]) f.dog = o[0] > o[1] ? 'a' : 'b'; });
   return F;
 };
-// peso escrito na linha: "Peso-médio", "medio", "Middleweight", "185", "galo feminino", "W Flyweight"…
-function catOf(txt) {
-  const sem = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  const t = sem(txt).replace(/peso[\s-]*/g, '').replace(/\b(lbs?|libras)\b/g, '').trim();
-  const fem = /femin|women|\bf\b|\bw\b/.test(t); const b = t.replace(/femin\w*|women'?s?|\bf\b|\bw\b/g, '').trim();
-  const M = [['peso-palha', /^(palha|strawweight|115)$/], ['peso-mosca', /^(mosca|flyweight|125)$/], ['peso-galo', /^(galo|bantamweight|135)$/], ['peso-pena', /^(pena|featherweight|145)$/], ['peso-leve', /^(leve|lightweight|155)$/], ['peso-meio-medio', /^(meio[\s-]?medio|welterweight|170)$/], ['peso-medio', /^(medio|middleweight|185)$/], ['peso-meio-pesado', /^(meio[\s-]?pesado|light[\s-]?heavyweight|205)$/], ['peso-pesado', /^(pesado|heavyweight|265)$/], ['peso-casado', /^(casado|catchweight|catch)$/]];
-  for (const [n, rx] of M) if (rx.test(b)) { const base = CATS.find(c => sem(c) === n); if (!base) return ''; const f = CATS.find(c => sem(c) === n + ' feminino'); return fem && f ? f : base; }
-  return '';
-}
-const parseFights0 = txt => txt.split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => {
-  let t = '', cat = '';
-  const tm = l.match(/(?:^|\s|[-–|@])\s*(\d{1,2})[:h](\d{2})(?=\s*(?:$|[|@]|\s[-–]\s))/); // horário em qualquer lugar da linha
-  if (tm) { t = tm[1].padStart(2, '0') + ':' + tm[2]; l = (l.slice(0, tm.index) + ' ' + l.slice(tm.index + tm[0].length)).trim(); }
-  const partes = l.split('|').map(x => x.trim()); l = partes.shift();
-  for (const x of partes) { const c = catOf(x); if (c && !cat) cat = c; } // "| Peso-Leve |", odds "- / -" são ignoradas
-  l = l.replace(/\s+[-–@]\s*$/, '').trim();
-  const cm = l.match(/\s+[-–@]\s+([^@]+?)\s*$/); if (cm) { const c = catOf(cm[1]); if (c) { if (!cat) cat = c; l = l.slice(0, cm.index); } }
-  const p = l.split(/\s+(?:x|vs\.?|X|VS)\s+/); if (p.length !== 2) return null;
-  const o = { id: 'f' + (i + 1), a: p[0].trim(), b: p[1].trim() }; if (t) o.t = t; if (cat) o.cat = cat; return o; });
+const parseFights0 = txt => txt.split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => { let t = ''; const tm = l.match(/\s*[-–|@]\s*(\d{1,2})[:h](\d{2})\s*$/); if (tm) { t = tm[1].padStart(2, '0') + ':' + tm[2]; l = l.slice(0, tm.index); } const p = l.split(/\s+(?:x|vs\.?|X|VS)\s+/); if (p.length !== 2) return null; const o = { id: 'f' + (i + 1), a: p[0].trim(), b: p[1].trim() }; if (t) o.t = t; return o; });
 $('btnCreate').onclick = async () => {
   const name = $('evName').value.trim(), date = $('evDate').value, lock = brt($('evLock').value);
   const fights = parseFights($('evFights').value);
@@ -565,45 +476,19 @@ function parseBulk(txt) {
   for (const e of out) { e.fights = parseFights(e.lines.join('\n')); if (!e.err && (!e.fights.length || e.fights.includes(null))) e.err = 'confira as lutas (Lutador A x Lutador B)'; if (!e.err) { e.fights.forEach((f, i) => { f.main = i < 2; f.rounds = i === 0 ? 5 : 3; }); e.lock = brt(e.date + 'T' + e.hm.padStart(5, '0')); } }
   return out;
 }
-// mesmo evento já criado? atualiza: lutas iguais mantêm resultado, fotos e id; as novas entram; a ordem segue a lista colada
-const semAc = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
-const nomeLimpo = x => semAc(String(x || '').split(/\s+[-–]\s+|\s*\|/)[0]); // ignora lixo colado no nome ("John Mitchell - 12:10 | Peso…")
-const parKey = f => [nomeLimpo(f.a), nomeLimpo(f.b)].sort().join('|');
-const ultKey = f => [nomeLimpo(f.a).split(' ').pop(), nomeLimpo(f.b).split(' ').pop()].sort().join('|');
-function planoUpd(ev, novas) {
-  const velhas = (ev.fights || []).map(f => Object.assign({}, f)), usadas = new Set(); let maxN = velhas.reduce((m, f) => Math.max(m, +(String(f.id || '').replace(/\D/g, '')) || 0), 0);
-  const achar = n => { let k = velhas.findIndex((f, i) => !usadas.has(i) && parKey(f) === parKey(n)); if (k < 0) k = velhas.findIndex((f, i) => !usadas.has(i) && ultKey(f) === ultKey(n));
-    if (k < 0) k = velhas.findIndex((f, i) => !usadas.has(i) && [nomeLimpo(f.a), nomeLimpo(f.b)].some(x => x && (x === nomeLimpo(n.a) || x === nomeLimpo(n.b)))); // um dos dois lutadores igual (o outro mudou de nome ou foi trocado)
-    return k; };
-  let atual = 0, novasN = 0; const fights = [];
-  novas.forEach((n, pos) => { const k = achar(n);
-    if (k >= 0) { usadas.add(k); const f = velhas[k]; const o = Object.assign({}, f, { a: n.a, b: n.b });
-      if (nomeLimpo(f.a).split(' ').pop() === nomeLimpo(n.b).split(' ').pop() && nomeLimpo(f.b).split(' ').pop() === nomeLimpo(n.a).split(' ').pop()) { o.a = n.b; o.b = n.a; } // mesma luta com os lados trocados: mantém o lado salvo (resultado e palpites)
-      if (n.t) o.t = n.t; if (n.cat) o.cat = n.cat; if (n.dog) o.dog = (o.a === n.a ? n.dog : (n.dog === 'a' ? 'b' : 'a'));
-      fights.push(o); atual++; }
-    else { const o = Object.assign({}, n, { id: 'f' + (++maxN), main: pos < 2, rounds: pos === 0 ? 5 : 3 }); fights.push(o); novasN++; } });
-  const sobra = velhas.filter((f, i) => !usadas.has(i)); sobra.forEach(f => fights.push(f));
-  return { fights, atual, novasN, sobra };
-}
 let bulkList = [];
 $('bulkPrev').onclick = async () => {
-  bulkList = parseBulk($('bulkTxt').value); const have = new Map(); try { (await db.collection('bolao').get()).forEach(d => have.set(String(d.data().name || '').trim().toLowerCase(), { id: d.id, ev: d.data() })); } catch (e) { }
-  bulkList.forEach(e => { if (e.err) return; const h = have.get(e.name.toLowerCase()); if (!h) return;
-    if (h.ev.status === 'done') { e.skip = true; return; }
-    e.upd = h; e.plano = planoUpd(h.ev, e.fights); });
-  const ok = bulkList.filter(e => !e.err && !e.skip), nc = ok.filter(e => !e.upd).length, nu = ok.filter(e => e.upd).length;
-  $('bulkOut').innerHTML = bulkList.length ? bulkList.map(e => { const p = e.plano;
-    const info = e.err ? esc(e.err) : e.skip ? 'já existe e está Encerrado, vou pular' : e.upd ? `🔄 já existe, vou ATUALIZAR: ${p.atual} luta(s) atualizada(s) (resultados, fotos e palpites mantidos), ${p.novasN} nova(s)${p.sobra.length ? `, ${p.sobra.length} que não está(ão) na lista fica(m) no fim: ${esc(p.sobra.map(f => f.a + ' x ' + f.b).join(', '))} (use 🗑️ no card se quiser tirar)` : ''}` : `${esc(e.date)} · fecha ${esc(e.hm)} · ${e.fights.length} lutas`;
-    return `<div class="evrow"><div class="evrow-i"><b>${e.err ? '❌' : e.skip ? '⏭️' : e.upd ? '🔄' : '✅'} ${esc(e.name || '(sem nome)')}</b><span class="muted">${info}</span></div></div>`; }).join('') : '<p class="muted">Nada pra importar.</p>';
-  $('bulkGo').hidden = !ok.length; $('bulkGo').textContent = [nc ? `Criar ${nc} ${nc === 1 ? 'evento' : 'eventos'}` : '', nu ? `Atualizar ${nu} ${nu === 1 ? 'evento' : 'eventos'}` : ''].filter(Boolean).join(' e ');
+  bulkList = parseBulk($('bulkTxt').value); const have = new Set(); try { (await db.collection('bolao').get()).forEach(d => have.add(String(d.data().name || '').trim().toLowerCase())); } catch (e) { }
+  bulkList.forEach(e => { if (!e.err && have.has(e.name.toLowerCase())) e.skip = true; });
+  const ok = bulkList.filter(e => !e.err && !e.skip);
+  $('bulkOut').innerHTML = bulkList.length ? bulkList.map(e => `<div class="evrow"><div class="evrow-i"><b>${e.err ? '❌' : e.skip ? '⏭️' : '✅'} ${esc(e.name || '(sem nome)')}</b><span class="muted">${e.err ? esc(e.err) : e.skip ? 'já existe, vou pular' : `${esc(e.date)} · fecha ${esc(e.hm)} · ${e.fights.length} lutas · principal: ${esc(e.fights[0].a)} x ${esc(e.fights[0].b)}${e.fights.some(f => f.dog) ? ` · 🦓 ${e.fights.filter(f => f.dog).length} zebras` : ''}`}</span></div></div>`).join('') : 'Nada pra criar: confira o formato.';
+  $('bulkGo').hidden = !ok.length; $('bulkGo').textContent = `Criar ${ok.length} ${ok.length === 1 ? 'evento' : 'eventos'}`;
 };
 $('bulkGo').onclick = async () => {
-  const ok = bulkList.filter(e => !e.err && !e.skip); if (!ok.length) return; $('bulkGo').disabled = true; let n = 0, u = 0;
-  try { for (const e of ok) { const d0 = brt(e.date + 'T12:00');
-      if (e.upd) { const F = e.plano.fights, L = locksOf(d0, F); await db.collection('bolao').doc(e.upd.id).set({ date: d0, lock: e.lock, season: e.date.slice(0, 7), fights: F, locks: L, ...lockLists(L) }, { merge: true }); u++; setOpen(e.upd.id, true); continue; }
-      await db.collection('bolao').add({ name: e.name, date: d0, lock: e.lock, status: 'open', season: e.date.slice(0, 7), boost: 1, fights: e.fights, locks: locksOf(d0, e.fights), ...lockLists(locksOf(d0, e.fights)) }); n++; }
-    $('bulkOut').innerHTML = [n ? `✅ ${n} ${n === 1 ? 'evento criado' : 'eventos criados'}` : '', u ? `🔄 ${u} ${u === 1 ? 'evento atualizado' : 'eventos atualizados'}` : ''].filter(Boolean).join(' · ') + '. Confere os cards em 📋 Eventos.'; $('bulkTxt').value = ''; $('bulkGo').hidden = true; loadEvents(); }
-  catch (err) { $('bulkOut').textContent = `Fiz ${n + u}, parei no erro: ${err.message}`; }
+  const ok = bulkList.filter(e => !e.err && !e.skip); if (!ok.length) return; $('bulkGo').disabled = true; let n = 0;
+  try { for (const e of ok) { const d0 = brt(e.date + 'T12:00'); await db.collection('bolao').add({ name: e.name, date: d0, lock: e.lock, status: 'open', season: e.date.slice(0, 7), boost: 1, fights: e.fights, locks: locksOf(d0, e.fights), ...lockLists(locksOf(d0, e.fights)) }); n++; }
+    $('bulkOut').innerHTML = `✅ ${n} ${n === 1 ? 'evento criado' : 'eventos criados'}. Fotos e arte você coloca em cada card.`; $('bulkTxt').value = ''; $('bulkGo').hidden = true; loadEvents(); }
+  catch (err) { $('bulkOut').textContent = `Criei ${n}, parei no erro: ${err.message}`; }
   $('bulkGo').disabled = false;
 };
 
@@ -637,34 +522,14 @@ async function loadHome() {
     const season = new Date().toISOString().slice(0, 7); let se = null; try { const d = await db.collection('bolao_season').doc(season).get(); se = d.exists ? d.data() : null; } catch (e) { }
     const nr = nx ? (nx.fights || []).filter(f => f.w).length : 0;
     box.innerHTML = `<div class="kpis"><div><b>${up.length}</b><small>próximos</small></div><div><b>${live.length}</b><small>rolando agora</small></div><div><b>${np}</b><small>palpites no ${nx ? 'próximo' : '—'}</small></div><div><b>${se ? se.total : 0}</b><small>jogadores no mês</small></div></div>
-      ${nx ? `<div class="hero ${stOf(nx)}" data-hero><span class="pill ${stOf(nx) === 'live' ? 'st-closed' : 'st-open'}">${stOf(nx) === 'live' ? '🔴 Rolando agora' : '⏳ Próximo evento'}</span><h3>${esc(nx.name)}</h3>
-        ${(nx.fights || [])[0] ? `<div class="vsrow" data-vs><i data-fa></i><span>${esc(nx.fights[0].a)}</span><em>×</em><span>${esc(nx.fights[0].b)}</span><i data-fb></i></div>` : ''}
-        ${stOf(nx) === 'up' ? `<div class="cdown" data-cd="${nx.lock}"></div>` : (() => { const px = (nx.fights || []).slice().reverse().find(f => !f.w); return px ? `<div class="proxluta">🥊 Próxima sem resultado: <b>${esc(px.a)} x ${esc(px.b)}</b>${px.t ? ` <span class="muted">· ${esc(px.t)}</span>` : ''}</div>` : ''; })()}
+      ${nx ? `<div class="hero ${stOf(nx)}"><span class="pill ${stOf(nx) === 'live' ? 'st-closed' : 'st-open'}">${stOf(nx) === 'live' ? '🔴 Rolando agora' : '⏳ Próximo evento'}</span><h3>${esc(nx.name)}</h3>
         <p class="muted">${esc(fmtDay(nx.date))} · ${(nx.fights || []).length} lutas · ${stOf(nx) === 'live' ? `<b>${nr} de ${(nx.fights || []).length}</b> resultados lançados` : `fecha em <b>${cdown(nx.lock - Date.now())}</b>`} · <b>${np}</b> palpites</p>
         <div class="row"><button data-go="eventos" data-ev="${nx._id}">${stOf(nx) === 'live' ? '🏁 Lançar resultados' : '✏️ Abrir o card'}</button><button class="ghost" data-go="criar">➕ Criar outro evento</button></div></div>` : `<div class="hero"><h3>Nenhum evento aberto</h3><p class="muted">Crie o próximo card pra galera palpitar.</p><button data-go="criar">➕ Criar evento</button></div>`}
       ${up.length > (live.length ? 0 : 1) ? `<h2>⏳ Na fila</h2>${up.slice(live.length ? 0 : 1).map(e => `<button class="evline" data-go="eventos" data-ev="${e._id}"><span class="cal"><b>${new Date(e.date).getDate()}</b><small>${new Date(e.date).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</small></span><span class="grow"><b>${esc(e.name)}</b><small class="muted">${(e.fights || []).length} lutas · fecha em ${cdown(e.lock - Date.now())}</small></span><i>›</i></button>`).join('')}` : ''}
-      ${last ? `<h2>✅ Último encerrado</h2><div class="card"><b>${esc(last.name)}</b> <span class="muted">· ${esc(fmtDay(last.date))} · ${top ? (top.total ?? (top.list || []).length) : 0} jogadores</span>${podiumH(top && top.list)}<div class="row"><button class="ghost" data-go="ranking">🏆 Ver ranking completo</button><button class="ghost" data-go="eventos" data-ev="${last._id}">Abrir evento</button></div></div>` : ''}
-      <h2>⚡ Atalhos</h2><div class="quick"><button data-go="criar"><i>📥</i>Vários eventos</button><button data-go="ranking"><i>🏆</i>Rankings</button><button data-go="ajustes"><i>📣</i>Aviso no jogo</button><button data-go="denuncias"><i>🚩</i>Denúncias</button></div>`;
-    if (nx) heroArte(box, nx);
+      ${last ? `<h2>✅ Último encerrado</h2><div class="card"><b>${esc(last.name)}</b> <span class="muted">· ${esc(fmtDay(last.date))} · ${top ? top.total : 0} jogadores</span>${podiumH(top && top.list)}<div class="row"><button class="ghost" data-go="ranking">🏆 Ver ranking completo</button><button class="ghost" data-go="eventos" data-ev="${last._id}">Abrir evento</button></div></div>` : ''}
+      <h2>⚡ Atalhos</h2><div class="quick"><button data-go="criar"><i>📥</i>Vários eventos</button><button data-go="ranking"><i>🏆</i>Rankings</button><button data-go="ajustes"><i>📣</i>Aviso no jogo</button><button data-go="denuncias"><i>🚩</i>Denúncias</button><button data-go="erros"><i>🐞</i>Erros</button></div>`;
   } catch (e) { box.innerHTML = '<p class="muted">Erro ao carregar: ' + esc(e.message) + '</p>'; }
 }
-// arte do próximo evento no Início: pôster de fundo + rostos da luta principal + contagem regressiva
-async function heroArte(box, nx) {
-  const h = box.querySelector('[data-hero]'); if (!h) return;
-  let poster = nx.poster || '', f0 = (nx.fights || [])[0] || {}, A = f0.imgA || '', B = f0.imgB || '';
-  if (nx.imgAt && (!poster || !A || !B)) { try { const d = await imgRef(nx._id).get(); const x = d.exists ? d.data() : {}; poster = poster || x.poster || ''; const g = (x.f || {})[f0.id] || {}; A = A || g.a || ''; B = B || g.b || ''; } catch (e) { } }
-  if (poster) { h.classList.add('arte'); h.style.setProperty('--poster', `url("${poster}")`); }
-  const fa = h.querySelector('[data-fa]'), fb = h.querySelector('[data-fb]');
-  if (fa) { fa.style.backgroundImage = A ? `url("${A}")` : ''; fa.hidden = !A; } if (fb) { fb.style.backgroundImage = B ? `url("${B}")` : ''; fb.hidden = !B; }
-  const cd = h.querySelector('[data-cd]'); if (cd) { const tick = () => { if (!document.body.contains(cd)) return clearInterval(t); const ms = +cd.dataset.cd - Date.now(); if (ms <= 0) { cd.innerHTML = '<b>FECHOU</b>'; return clearInterval(t); }
-    const p = [[Math.floor(ms / 864e5), 'dias'], [Math.floor(ms % 864e5 / 36e5), 'horas'], [Math.floor(ms % 36e5 / 6e4), 'min'], [Math.floor(ms % 6e4 / 1e3), 'seg']];
-    cd.innerHTML = p.map(([v, l]) => `<b>${String(v).padStart(2, '0')}<small>${l}</small></b>`).join(''); }; const t = setInterval(tick, 1000); tick(); }
-}
-// barra de salvar: aparece quando algum card tem mudança não salva
-setInterval(() => { const c = [...document.querySelectorAll('.evcard')].find(x => { const u = x.querySelector('[data-unsaved]'); return u && !u.hidden; });
-  const bar = $('savebar'); if (!bar) return; bar.hidden = !c; if (c) { $('savebarEv').textContent = (c.querySelector('.evhead h3') || {}).textContent || 'evento'; bar.dataset.id = c.dataset.id; } }, 700);
-document.addEventListener('click', e => { if (e.target.closest('#savebarBtn')) { const c = document.querySelector(`.evcard[data-id="${$('savebar').dataset.id}"]`); const b = c && c.querySelector('[data-act="save"]'); if (b) { c.classList.remove('collapsed'); b.click(); } } });
-window.addEventListener('beforeunload', e => { if (!$('savebar').hidden) { e.preventDefault(); e.returnValue = ''; } });
 // ranking: escolhe evento, mês ou geral e vê a tabela inteira (até 100)
 let rkSel = null;
 async function loadRank() {
@@ -732,37 +597,32 @@ function eventCard(id, ev) {
   const pill = { open: ['🟢', 'Aberto', 'st-open'], closed: ['🔒', 'Fechado', 'st-closed'], done: ['✅', 'Encerrado', 'st-done'] }[stt] || ['🟢', 'Aberto', 'st-open'];
   el.className = 'card evcard ' + pill[2]; el.dataset.id = id;
   if (!isOpen(id, ev)) el.classList.add('collapsed');
-  el.innerHTML = `<div class="evhead" data-toggle title="Clique pra abrir ou fechar"><div class="hfaces" data-hfaces hidden><i></i><i></i><b>VS</b></div><span class="chev">▾</span><div class="grow"><span class="pill ${pill[2]}">${pill[0]} ${pill[1]}</span><span class="muted"> ${esc(fmtDay(ev.date))}</span><h3>${esc(ev.name)}</h3>
+  el.innerHTML = `<div class="evhead" data-toggle title="Clique pra abrir ou fechar"><span class="chev">▾</span><div class="grow"><span class="pill ${pill[2]}">${pill[0]} ${pill[1]}</span><span class="muted"> ${esc(fmtDay(ev.date))}</span><h3>${esc(ev.name)}</h3>
       <div class="progrow"><span class="muted">🏁 Resultados lançados: <b>${nr} de ${F0.length}</b> lutas${nr === 0 ? ' (o evento ainda não começou)' : nr === F0.length ? ' ✅ todas' : ''}</span><div class="prog" title="Quantas lutas já têm vencedor marcado"><i style="width:${F0.length ? Math.round(100 * nr / F0.length) : 0}%"></i></div></div></div>
       <label class="stsel"><span>Status</span><select data-k="status" style="width:auto"><option value="open">Aberto</option><option value="closed">Fechado</option><option value="done">Encerrado</option></select></label></div>
     <p class="muted donehint" data-donehint hidden>✅ Ao salvar como <b>Encerrado</b>, este evento sai daqui e vai pra lista compacta de Encerrados (os jogadores veem só o resumo).</p>
     <img class="poster" data-poster alt="" hidden>
-    <div class="evinfo"><span>🔒 Palpites fecham <b>${esc(fmtBrt(ev.lock))}</b></span><button type="button" class="lk all" data-lkall>🔒 Fechar TODOS os palpites agora</button><span>🥊 ${F0.length} lutas</span></div>
+    <div class="evinfo"><span>🔒 Palpites fecham <b>${esc(fmtBrt(ev.lock))}</b></span><span>🥊 ${F0.length} lutas</span></div>
     <details class="evset"><summary>⚙️ Ajustes do card <span class="muted">arte, horários em sequência, imagem dos stories, prazo dos pontos</span></summary>
     <div class="row"><span class="muted">📸 Card principal (vai na imagem dos stories): as primeiras</span><input type="number" data-k="mc" min="1" max="15" value="${ev.mc || 5}" style="width:70px!important"><span class="muted">lutas</span></div>
     <div class="row"><span class="muted">⏳ Prometo os pontos em até</span><input type="number" data-k="resH" min="1" max="72" value="${ev.resH || 12}" style="width:70px!important"><span class="muted">horas depois da última luta (aparece pro jogador no app)</span></div>
     <div class="row"><button class="ghost" data-act="poster">🖼️ Arte do evento</button><button class="ghost" data-act="noposter" hidden>Tirar arte</button></div>
     <div class="row" style="margin-top:8px"><span class="muted">⏰ Horários em sequência: 1ª luta do card (a de baixo) às</span><input type="time" class="time" data-seq-start value="20:00"><span class="muted">a cada</span><input type="number" class="time" data-seq-gap value="30" min="5" step="5" style="width:70px!important"><span class="muted">min (lutas de 5 rounds: 40 min)</span><button class="ghost" data-act="seq">Preencher</button></div>
-    <div class="zebrabox sobrebox"><b>♻️ Sobrescrever evento</b> <span class="muted">cole o bloco do evento (com a linha <b>===</b> no topo ou só as lutas). Atualiza <b>este</b> evento: nome, data, horário de fechar e lutas. Lutas que já existem mantêm resultado, fotos e palpites; peso, horário e zebra (pelas odds) entram sozinhos.</span>
-      <textarea data-sobtxt rows="6" spellcheck="false" placeholder="=== UFC Arábia Saudita: Adesanya x Magomedov | 2026-12-05 | 17:15&#10;Israel Adesanya x Shara Magomedov - 17:15 | Peso-Médio | -165 / +140&#10;Ian Machado Garry x Yaroslav Amosov - 16:50 | Peso Meio-Médio | -190 / +160"></textarea>
-      <div class="muted" style="display:flex;gap:8px;align-items:center;justify-content:flex-start;margin:6px 0;text-align:left"><input type="checkbox" data-sobdel checked style="width:auto;margin:0;flex:none"><span>Tirar do card as lutas que não estão na lista</span></div>
-      <div class="row"><button class="ghost" data-act="sobprev">👀 Conferir</button><button data-act="sobgo" hidden>♻️ Sobrescrever</button><span class="muted grow" data-sobout></span></div></div>
-    <details class="zebradet"><summary class="muted">🦓 Zebras na mão (só se precisar; as odds do bloco acima já marcam sozinhas)</summary>
     <div class="zebrabox"><b>🦓 Zebras do evento</b> <span class="muted">cole os nomes de quem é zebra (um por linha ou separados por vírgula, pode ser só o sobrenome) ou a lista de odds do card inteiro: eu marco quem tem a odd maior (+).</span>
       <textarea data-zebras rows="3" placeholder="Ex.: Islam Dulatov&#10;Chokheli, Stirling"></textarea>
-      <div class="row"><button class="ghost" data-act="zebras">🦓 Marcar zebras</button><button class="ghost" data-act="zebraclr">Tirar todas</button><span class="muted grow" data-zout></span></div></div></details>
+      <div class="row"><button class="ghost" data-act="zebras">🦓 Marcar zebras</button><button class="ghost" data-act="zebraclr">Tirar todas</button><span class="muted grow" data-zout></span></div></div>
     </details>
     <div class="fights">${(ev.fights || []).map((f, i) => `<div class="fight vis" data-fi="${i}">
-      <div class="ftop"><span class="mvbox"><span class="drag" draggable="true" title="Segure e arraste pra mudar a ordem">⠿</span><button type="button" class="mv" data-mv="-1" title="Subir">▲</button><button type="button" class="mv" data-mv="1" title="Descer">▼</button><button type="button" class="mv" data-ed title="Corrigir os nomes">✏️</button><button type="button" class="mv" data-del title="Excluir esta luta">🗑️</button></span><span class="fno">${i === 0 ? '⭐ Luta principal' : i === 1 ? '⭐ Co-principal' : 'Luta ' + (i + 1)}</span><button type="button" class="lk" data-lk title="Fecha os palpites desta luta e das que vêm antes dela na noite (as de baixo)"></button>
+      <div class="ftop"><span class="fno">${i === 0 ? '⭐ Luta principal' : i === 1 ? '⭐ Co-principal' : 'Luta ' + (i + 1)}</span>
         <label class="chip tg"><input type="checkbox" data-i="${i}" data-k="main"> ⭐ Principal</label>
         <span class="seg"><button type="button" class="chip" data-set="rounds" data-v="3">3R</button><button type="button" class="chip" data-set="rounds" data-v="5">5R</button></span>
         <select class="mini" data-i="${i}" data-k="cat"><option value="">Categoria…</option>${CATS.map(c => `<option>${c}</option>`).join('')}</select>
         <span class="tm" title="Horário da luta (Brasília): os palpites dela fecham nessa hora">🕐<input type="time" class="time" data-i="${i}" data-k="t"></span></div>
       <div class="duo">
-        <div class="side" data-side="a"><div class="face" data-face="a" data-i="${i}" title="Foto de ${esc(f.a)}">📷</div><b class="fname">${esc(f.a)}</b><input class="fedit" data-i="${i}" data-k="a" value="${esc(f.a)}" hidden>
+        <div class="side" data-side="a"><div class="face" data-face="a" data-i="${i}" title="Foto de ${esc(f.a)}">📷</div><b class="fname">${esc(f.a)}</b>
           <div class="sbtn"><button type="button" class="wbtn" data-set="w" data-v="a">🏆 Venceu</button><button type="button" class="dbtn" data-set="dog" data-v="a" title="Marcar como zebra (+2 pra quem acertar)">ZEBRA</button></div></div>
         <div class="mid"><span class="vsx">VS</span><button type="button" class="xbtn" data-set="w" data-v="d">🤝 Empate</button><button type="button" class="xbtn" data-set="w" data-v="nc">🚫 Cancelada</button></div>
-        <div class="side" data-side="b"><div class="face" data-face="b" data-i="${i}" title="Foto de ${esc(f.b)}">📷</div><b class="fname">${esc(f.b)}</b><input class="fedit" data-i="${i}" data-k="b" value="${esc(f.b)}" hidden>
+        <div class="side" data-side="b"><div class="face" data-face="b" data-i="${i}" title="Foto de ${esc(f.b)}">📷</div><b class="fname">${esc(f.b)}</b>
           <div class="sbtn"><button type="button" class="wbtn" data-set="w" data-v="b">🏆 Venceu</button><button type="button" class="dbtn" data-set="dog" data-v="b" title="Marcar como zebra (+2 pra quem acertar)">ZEBRA</button></div></div>
       </div>
       <div class="how"><span class="seg">${Object.entries({ ko: '👊 Nocaute', sub: '🔒 Finalização', dec: '⚖️ Decisão' }).map(([k, v]) => `<button type="button" class="chip" data-set="m" data-v="${k}">${v}</button>`).join('')}</span>
@@ -773,11 +633,6 @@ function eventCard(id, ev) {
       <select data-i="${i}" data-k="w"><option value="">Vencedor…</option><option value="a">${esc(f.a)}</option><option value="b">${esc(f.b)}</option><option value="d">🤝 Empate</option><option value="nc">🚫 Cancelada / sem resultado</option></select>
       <select data-i="${i}" data-k="m"><option value="">Como…</option>${Object.entries(MET).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
       <select data-i="${i}" data-k="r"><option value="">Round…</option>${[1, 2, 3, 4, 5].map(r => `<option value="${r}">R${r}</option>`).join('')}</select></div></div>`).join('')}</div>
-    <div class="pastecta"><button class="ghost" data-act="addf">➕ Acrescentar lutas</button><span class="muted">esqueceu alguma luta? põe aqui</span></div>
-    <div data-addbox hidden style="margin:6px 0 10px">
-      <textarea data-addtxt rows="4" placeholder="Uma por linha, igual quando cria o evento. Ex.:&#10;Jake Matthews x Tahir Abdullayev - Peso-meio-médio - 12:10&#10;Ana Silva x Maria Souza - galo feminino - 11:45" style="width:100%"></textarea>
-      <div class="row"><label class="muted">Entram</label><select data-addpos style="width:auto"><option value="end">no fim do card (preliminares)</option><option value="top">no topo (vira a luta principal)</option></select>
-        <button data-act="addgo">➕ Acrescentar</button><button class="ghost" data-act="addclose">Fechar</button></div><div class="muted" data-addout></div></div>
     <div class="pastecta"><button class="ghost" data-act="paste">📋 Lançar resultados de uma vez</button><span class="muted">print ou texto de qualquer site: preencho vencedor, método e round</span></div>
     <div data-pastebox hidden>
       <div data-drop tabindex="0" style="margin-top:6px;border:2px dashed #3a4a5a;border-radius:10px;padding:14px;text-align:center;cursor:pointer">
@@ -806,10 +661,6 @@ function eventCard(id, ev) {
       if (k === 'm') b.disabled = !(w === 'a' || w === 'b'); if (k === 'r') { b.disabled = !(m === 'ko' || m === 'sub'); b.hidden = +b.dataset.v > rd; } }); });
   const paint = () => {
     const p = el.querySelector('[data-poster]'); p.hidden = !img.poster; if (img.poster) p.src = img.poster;
-    const hd = el.querySelector('.evhead'); hd.classList.toggle('arte', !!img.poster); p.classList.toggle('no-dup', !!img.poster);
-    hd.style.setProperty('--poster', img.poster ? `url("${img.poster}")` : 'none');
-    const hf = el.querySelector('[data-hfaces]'), m0 = img.fights[0] || {};
-    hf.hidden = !(m0.imgA && m0.imgB); hd.classList.toggle('temfaces', !hf.hidden); if (!hf.hidden) { const [ia, ib] = hf.querySelectorAll('i'); ia.style.backgroundImage = `url("${m0.imgA}")`; ib.style.backgroundImage = `url("${m0.imgB}")`; }
     el.querySelector('[data-act="noposter"]').hidden = !img.poster;
     el.querySelectorAll('[data-face]').forEach(d => { const s = img.fights[+d.dataset.i]['img' + d.dataset.face.toUpperCase()]; d.style.backgroundImage = s ? `url("${s}")` : ''; d.classList.toggle('has', !!s); });
   };
@@ -831,80 +682,13 @@ function eventCard(id, ev) {
   });
   el.querySelector('[data-act="poster"]').onclick = async () => { const file = await pickFile(); if (!file) return; try { img.poster = await toDataUrl(await loadImg(file), 900, 900, 'image/jpeg', 0.82); paint(); dirty(); } catch (e) { out.textContent = 'Não abriu a imagem: ' + e.message; } };
   el.querySelector('[data-act="noposter"]').onclick = () => { img.poster = ''; paint(); dirty(); };
-  // ↕️ ordem das lutas: setas ou arrastar (a de cima é a principal)
-  const box = el.querySelector('.fights');
-  const ordem = () => [...box.querySelectorAll(':scope > .fight')].map(x => +x.dataset.fi);
-  const renum = () => [...box.querySelectorAll(':scope > .fight')].forEach((x, k) => { x.querySelector('.fno').textContent = k === 0 ? '⭐ Luta principal' : k === 1 ? '⭐ Co-principal' : 'Luta ' + (k + 1); });
-  const mudouOrdem = () => { renum(); dirty(); el.querySelector('[data-out]').textContent = '↕️ Ordem mudada: clique em Salvar pra valer.'; };
-  box.addEventListener('click', e => {
-    const ed = e.target.closest('[data-ed]');
-    if (ed) { const f = ed.closest('.fight'); const abre = f.querySelector('.fedit').hidden; f.querySelectorAll('.fedit').forEach(x => { x.hidden = !abre; }); f.querySelectorAll('.fname').forEach(x => { x.hidden = abre; }); if (abre) f.querySelector('.fedit').focus(); return; }
-    const dl = e.target.closest('[data-del]');
-    if (dl) { const f = dl.closest('.fight'); const nm = [...f.querySelectorAll('.fedit')].map(x => x.value).join(' x ');
-      if (!confirm(`Excluir ${nm}?\nOs palpites dessa luta deixam de contar. Só vale depois de clicar em Salvar.`)) return;
-      f.remove(); renum(); dirty(); el.querySelector('[data-out]').textContent = `🗑️ ${nm} vai ser excluída quando você clicar em Salvar (recarregar a página desfaz).`; return; }
-    const b = e.target.closest('[data-mv]'); if (!b) return; const f = b.closest('.fight');
-    const alvo = +b.dataset.mv < 0 ? f.previousElementSibling : f.nextElementSibling; if (!alvo) return;
-    if (+b.dataset.mv < 0) box.insertBefore(f, alvo); else box.insertBefore(alvo, f); mudouOrdem(); f.scrollIntoView({ block: 'nearest' }); });
-  let arrastando = null;
-  box.addEventListener('dragstart', e => { const h = e.target.closest('.drag'); if (!h) return; arrastando = h.closest('.fight'); arrastando.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', ''); e.dataTransfer.setDragImage(arrastando, 30, 20); } catch (x) {} });
-  const limpa = () => box.querySelectorAll('.drop-above,.drop-below').forEach(x => x.classList.remove('drop-above', 'drop-below'));
-  box.addEventListener('dragover', e => { if (!arrastando) return; const f = e.target.closest('.fight'); if (!f || f === arrastando) return; e.preventDefault(); limpa(); const r = f.getBoundingClientRect(); f.classList.add(e.clientY < r.top + r.height / 2 ? 'drop-above' : 'drop-below'); });
-  box.addEventListener('drop', e => { if (!arrastando) return; e.preventDefault(); const f = e.target.closest('.fight'); if (f && f !== arrastando) { const r = f.getBoundingClientRect(); box.insertBefore(arrastando, e.clientY < r.top + r.height / 2 ? f : f.nextElementSibling); mudouOrdem(); } limpa(); });
-  box.addEventListener('input', e => { const x = e.target.closest('.fedit'); if (!x) return; const n = x.closest('.side').querySelector('.fname'); n.textContent = x.value; dirty(); });
-  box.addEventListener('dragend', () => { if (arrastando) arrastando.classList.remove('dragging'); arrastando = null; limpa(); });
-  // 🔒 fechar palpites na mão (os horários podem estar errados): grava na hora, sem precisar Salvar
-  const lkTxt = () => { const L = ev.locks || {}, agora = Date.now();
-    box.querySelectorAll(':scope > .fight').forEach(row => { const f = ev.fights[+row.dataset.fi]; const b = row.querySelector('[data-lk]'); if (!f || !b) return;
-      const fechada = (L[f.id] || Infinity) <= agora; b.classList.toggle('fechada', fechada);
-      b.textContent = fechada ? (f.fechou ? '🔓 Reabrir palpites' : '🔒 Fechada (horário)') : '🔒 Fechar palpites'; b.disabled = fechada && !f.fechou; }); };
-  const gravaLocks = async (msgOk) => { const out = el.querySelector('[data-out]'); const locks = locksOf(ev.date, ev.fights);
-    const novoLock = Math.min(ev.lock || Infinity, ...Object.values(locks));
-    try { await db.collection('bolao').doc(id).set({ fights: ev.fights, locks, ...lockLists(locks), lock: novoLock }, { merge: true });
-      ev.locks = locks; ev.lock = novoLock; lkTxt(); out.textContent = msgOk; } catch (e) { out.textContent = 'Não consegui gravar: ' + e.message; } };
-  box.addEventListener('click', async e => { const b = e.target.closest('[data-lk]'); if (!b) return; const row = b.closest('.fight'); const f = ev.fights[+row.dataset.fi]; if (!f) return;
-    if (f.fechou) { delete f.fechou; await gravaLocks(`🔓 ${f.a} x ${f.b} reaberta (se o horário dela já passou, continua fechada pelo horário).`); return; }
-    const agora = Date.now(), linhas = [...box.querySelectorAll(':scope > .fight')], pos = linhas.indexOf(row); let n = 0;
-    linhas.slice(pos).forEach(r => { const x = ev.fights[+r.dataset.fi]; if (x && !x.w && !((ev.locks || {})[x.id] <= agora)) { x.fechou = agora; n++; } }); // esta + as que vêm antes na noite
-    if (!f.fechou) { f.fechou = agora; n++; }
-    await gravaLocks(`🔒 Palpites fechados: ${f.a} x ${f.b}${n > 1 ? ` e mais ${n - 1} luta(s) antes dela` : ''}.`); });
-  el.querySelector('[data-lkall]').onclick = async () => { if (!confirm('Fechar os palpites de TODAS as lutas deste evento agora?')) return; const agora = Date.now();
-    ev.fights.forEach(x => { if (!((ev.locks || {})[x.id] <= agora)) x.fechou = agora; }); await gravaLocks('🔒 Todos os palpites deste evento foram fechados.'); };
-  lkTxt(); const lkTimer = setInterval(() => { if (!document.body.contains(el)) return clearInterval(lkTimer); lkTxt(); }, 30000);
-  // ♻️ sobrescrever ESTE evento com um bloco colado (não cria evento novo)
-  let sobPlano = null;
-  const sobLer = () => { const txt = el.querySelector('[data-sobtxt]').value.trim(); if (!txt) return { err: 'Cole o bloco do evento primeiro.' };
-    if (/^\s*===/.test(txt)) { const b = parseBulk(txt)[0]; if (!b) return { err: 'Não entendi o bloco.' }; if (b.err) return { err: 'Linha === : ' + b.err }; return b; }
-    const fights = parseFights(txt); if (!fights.length || fights.includes(null)) return { err: 'Confira: uma luta por linha, "Lutador A x Lutador B".' }; return { fights }; };
-  el.querySelector('[data-act="sobprev"]').onclick = () => { const out = el.querySelector('[data-sobout]'), go = el.querySelector('[data-act="sobgo"]'); go.hidden = true; sobPlano = null;
-    if (!el.querySelector('[data-unsaved]').hidden) { out.textContent = '⚠️ Tem mudança não salva nas lutas. Salve antes (ou recarregue a página pra descartar).'; return; }
-    const b = sobLer(); if (b.err) { out.textContent = '❌ ' + b.err; return; }
-    const p = planoUpd(ev, b.fights), tira = el.querySelector('[data-sobdel]').checked;
-    const comRes = p.sobra.filter(f => f.w);
-    const partes = [];
-    if (b.name && b.name !== ev.name) partes.push(`nome: "${b.name}"`);
-    if (b.date) partes.push(`data ${b.date}, palpites fecham ${b.hm}`);
-    partes.push(`${p.atual} luta(s) atualizada(s)`, `${p.novasN} nova(s)`);
-    if (p.sobra.length) partes.push(tira ? `${p.sobra.length} sai(em): ${p.sobra.map(f => f.a + ' x ' + f.b).join(', ')}` : `${p.sobra.length} fica(m) no fim: ${p.sobra.map(f => f.a + ' x ' + f.b).join(', ')}`);
-    out.innerHTML = esc('Vou fazer: ' + partes.join(' · ') + '.') + (tira && comRes.length ? `<br><b style="color:#ffb3a8">⚠️ ${esc(comRes.map(f => f.a + ' x ' + f.b).join(', '))} já tem resultado e vai sair. Desmarque a caixinha se não quiser.</b>` : '');
-    sobPlano = { b, p, tira }; go.hidden = false; };
-  el.querySelector('[data-act="sobgo"]').onclick = async () => { if (!sobPlano) return; const { b, p, tira } = sobPlano; const out = el.querySelector('[data-sobout]');
-    const sai = new Set(tira ? p.sobra.map(f => f.id) : []); const fights = p.fights.filter(f => !sai.has(f.id));
-    if (!fights.length) { out.textContent = 'O card ficaria sem lutas. Confere o bloco.'; return; }
-    const upd = { fights };
-    if (b.name) upd.name = b.name;
-    if (b.date) { upd.date = brt(b.date + 'T12:00'); upd.lock = b.lock; upd.season = b.date.slice(0, 7); }
-    const locks = locksOf(upd.date || ev.date, fights); Object.assign(upd, { locks, ...lockLists(locks) });
-    out.textContent = 'Gravando…'; el.querySelector('[data-act="sobgo"]').disabled = true;
-    try { await db.collection('bolao').doc(id).set(upd, { merge: true }); out.textContent = '✅ Evento sobrescrito. Recarregando…'; setOpen(id, true); setTimeout(loadEvents, 700); }
-    catch (e) { out.textContent = 'Não gravou: ' + e.message; el.querySelector('[data-act="sobgo"]').disabled = false; } };
   el.querySelector('[data-act="seq"]').onclick = () => {
     const [h, m] = el.querySelector('[data-seq-start]').value.split(':').map(Number); const gap = +el.querySelector('[data-seq-gap]').value || 30;
     if (isNaN(h)) return; const n = (ev.fights || []).length;
     // a lista começa pela principal, então a última linha é a primeira luta da noite
     // cada luta começa depois da anterior: luta de 5 rounds ocupa 40 min, as outras o intervalo escolhido
     let t = h * 60 + m;
-    for (const i of ordem().reverse()) {
+    for (let i = n - 1; i >= 0; i--) {
       el.querySelector(`[data-i="${i}"][data-k="t"]`).value = String(Math.floor(t % 1440 / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
       t += +el.querySelector(`[data-i="${i}"][data-k="rounds"]`).value === 5 ? 40 : gap;
     }
@@ -932,28 +716,6 @@ function eventCard(id, ev) {
     out.innerHTML = (ok.length ? `✅ Marquei ${ok.length}: ${ok.map(esc).join(', ')}.` : '') + (miss.length ? ` <span style="color:#ff8e86">Não achei: ${miss.map(esc).join(', ')}.</span>` : '') + (dup.length ? ` <span style="color:#f2c94c">Nome igual em mais de uma luta (use o nome completo): ${dup.map(esc).join(', ')}.</span>` : '') + (ok.length ? ' Depois é só Salvar.' : '');
   };
   el.querySelector('[data-act="zebraclr"]').onclick = () => { (ev.fights || []).forEach((f, i) => { el.querySelector(`[data-i="${i}"][data-k="dog"]`).value = ''; }); dirty(); paintW(); el.querySelector('[data-zout]').textContent = 'Zebras removidas. Depois é só Salvar.'; };
-  el.querySelector('[data-act="addf"]').onclick = () => { const b = el.querySelector('[data-addbox]'); b.hidden = !b.hidden; if (!b.hidden) el.querySelector('[data-addtxt]').focus(); };
-  el.querySelector('[data-act="addclose"]').onclick = () => { el.querySelector('[data-addbox]').hidden = true; };
-  el.querySelector('[data-act="addgo"]').onclick = async () => {
-    const ao = el.querySelector('[data-addout]');
-    if (!el.querySelector('[data-unsaved]').hidden) { ao.textContent = '⚠️ Você tem mudanças não salvas nas lutas. Clique em Salvar primeiro, depois acrescente.'; return; }
-    const novas = parseFights(el.querySelector('[data-addtxt]').value);
-    if (!novas.length || novas.includes(null)) { ao.textContent = 'Confira: uma luta por linha, no formato "Lutador A x Lutador B" (peso e horário opcionais).'; return; }
-    const velhas = ev.fights || [];
-    const sem = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-    const repet = novas.filter(n => velhas.some(f => [sem(f.a), sem(f.b)].sort().join('|') === [sem(n.a), sem(n.b)].sort().join('|')));
-    if (repet.length) { ao.textContent = '⚠️ Já está no card: ' + repet.map(n => n.a + ' x ' + n.b).join(', ') + '. Tira da lista e tenta de novo.'; return; }
-    let maxN = velhas.reduce((m, f) => Math.max(m, +(String(f.id || '').replace(/\D/g, '')) || 0), 0);
-    novas.forEach(n => { n.id = 'f' + (++maxN); n.main = false; n.rounds = 3; });
-    const top = el.querySelector('[data-addpos]').value === 'top';
-    if (top) { novas[0].main = true; novas[0].rounds = 5; }
-    const fights = top ? novas.concat(velhas) : velhas.concat(novas);
-    const locks = locksOf(ev.date, fights);
-    ao.textContent = 'Salvando…';
-    try { await db.collection('bolao').doc(id).set({ fights, locks, ...lockLists(locks) }, { merge: true });
-      ao.textContent = `✅ ${novas.length} luta(s) acrescentada(s). Atualizando…`; setOpen(id, true); setTimeout(loadEvents, 700); }
-    catch (e) { ao.textContent = 'Não salvou: ' + e.message; }
-  };
   el.querySelector('[data-act="paste"]').onclick = () => { const b = el.querySelector('[data-pastebox]'); b.hidden = !b.hidden; if (!b.hidden) el.querySelector('[data-paste]').focus(); };
   el.querySelector('[data-act="pasteclose"]').onclick = () => { el.querySelector('[data-pastebox]').hidden = true; };
   const fsRounds = () => (ev.fights || []).map((f, i) => ({ a: f.a, b: f.b, rounds: +el.querySelector(`[data-i="${i}"][data-k="rounds"]`).value || 3 }));
@@ -992,15 +754,12 @@ function eventCard(id, ev) {
   };
   const resKey = fs => JSON.stringify((fs || []).map(f => [f.id, f.w || '', f.m || '', f.r || 0]));
   el.querySelector('[data-act="save"]').onclick = async () => {
-    const ord = ordem(), reordenou = ord.length !== (ev.fights || []).length || ord.some((x, k) => x !== k);
-    const ev0 = ord.map(i => ev.fights[i]);
-    const fights = ord.map(i => [ev.fights[i], i]).map(([f, i]) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: (q('a') && q('a').value.trim()) || f.a, b: (q('b') && q('b').value.trim()) || f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; if (f.fechou) o.fechou = f.fechou; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && w !== 'nc' && m) o.m = m; if (w && w !== 'nc' && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
+    const fights = (ev.fights || []).map((f, i) => { const q = k => el.querySelector(`[data-i="${i}"][data-k="${k}"]`); const o = { id: f.id, a: f.a, b: f.b, main: q('main').checked, rounds: +q('rounds').value || 3 }; const cat = q('cat').value; if (cat) o.cat = cat; const dog = q('dog').value, w = q('w').value, m = q('m').value, r = q('r').value, t = q('t').value; if (dog) o.dog = dog; if (w) o.w = w; if (w && w !== 'nc' && m) o.m = m; if (w && w !== 'nc' && r && (m === 'ko' || m === 'sub')) o.r = +r; if (t) o.t = t; return o; });
     const data = { fights, status: el.querySelector('[data-k="status"]').value, mc: Math.max(1, Math.min(15, +el.querySelector('[data-k="mc"]').value || 5)), resH: Math.max(1, Math.min(72, +el.querySelector('[data-k="resH"]').value || 12)), season: ev.season || new Date(ev.date || Date.now()).toISOString().slice(0, 7), poster: firebase.firestore.FieldValue.delete(), locks: locksOf(ev.date, fights), ...lockLists(locksOf(ev.date, fights)) };
     out.textContent = 'Salvando…'; let kb = 0;
-    try { const r = await saveImgs(id, { poster: img.poster, fights: ord.map(i => img.fights[i] || {}) }, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); const changed = resKey(ev.fights) !== resKey(fights); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB).`;
+    try { const r = await saveImgs(id, img, fights); kb = r.kb; data.imgAt = r.at; await db.collection('bolao').doc(id).set(data, { merge: true }); const changed = resKey(ev.fights) !== resKey(fights); ev.fights = fights; ev.poster = img.poster; el.querySelector('[data-unsaved]').hidden = true; out.textContent = `✅ Salvo (fotos: ${kb} KB).`;
       // resultado novo ou alterado: o ranking já sai junto, sem precisar de outro clique
       if (changed && fights.some(f => f.w)) await calc('✅ Salvo. ');
-      if ((reordenou || fights.some((f, k) => f.a !== ev0[k].a || f.b !== ev0[k].b)) && data.status !== 'done') { out.textContent += ' Lutas atualizadas, recarregando…'; setOpen(id, true); setTimeout(loadEvents, 900); return; }
       if (data.status === 'done' && ev.status !== 'done') { ev.status = 'done'; out.textContent += ' Evento encerrado: indo pra lista de Encerrados…'; el.classList.add('closing'); setTimeout(loadEvents, 1400); }
       else ev.status = data.status; }
     catch (e) { out.textContent = 'Erro: ' + e.message; }
@@ -1085,6 +844,14 @@ function drawCrop() {
   const bc = $('cropBody').getContext('2d'); bc.clearRect(0, 0, 90, 128); const s = Math.min(90 / src.width, 128 / src.height); const w = src.width * s, h = src.height * s; bc.drawImage(src, (90 - w) / 2, (128 - h) / 2, w, h);
   bc.strokeStyle = '#e8b44a'; bc.lineWidth = 1.5; bc.strokeRect((90 - w) / 2 + sx * s, (128 - h) / 2 + sy * s, side * s, side * s);
 }
+// v5.17: o rosto salvo tem 224 px (antes 128): a arte de compartilhar do Bolão mostra as fotos grandes e ficava borrada.
+// A prévia continua com 128; o arquivo sai maior só se a foto original tiver resolução pra isso.
+function faceOut() {
+  const { src, z, x, y } = cropState; const side = Math.min(src.width, src.height) / z;
+  const sx = x * (src.width - side), sy = y * (src.height - side); const n = Math.max(128, Math.min(224, Math.round(side)));
+  const o = document.createElement('canvas'); o.width = o.height = n; const g = o.getContext('2d'); g.imageSmoothingQuality = 'high';
+  g.drawImage(src, sx, sy, side, side, 0, 0, n, n); return canvasUrl(o, 'image/webp', 0.8);
+}
 ['cz', 'cx', 'cy'].forEach(k => $(k).oninput = () => { cropState[{ cz: 'z', cx: 'x', cy: 'y' }[k]] = +$(k).value; drawCrop(); });
 // escolhe o PNG e deixa ajustar o rosto. Devolve o rosto, null (tirar) ou undefined (cancelou)
 async function editFighter(name, hasFace) {
@@ -1102,7 +869,7 @@ async function editFighter(name, hasFace) {
     const done = v => { dlg.close(); res(v); };
     $('cropCancel').onclick = () => done(undefined);
     dlg.oncancel = () => res(undefined);
-    $('cropOk').onclick = () => done(canvasUrl($('cropFace'), 'image/webp', 0.85));
+    $('cropOk').onclick = () => done(faceOut());
   });
 }
 
@@ -1137,6 +904,32 @@ $('btnCfg').onclick = async () => {
   try { await db.collection('config').doc('rules').set({ json, at: Date.now() }); CFG_DOC = doc; $('cfJson').value = JSON.stringify(doc, null, 1); $('cfgMsg').textContent = '✅ Salvo (versão ' + doc.version + '). Os celulares pegam em até 12 h.'; }
   catch (e) { $('cfgMsg').textContent = 'Erro ao salvar: ' + e.message + ' (publicou as regras novas do Firestore com o bloco config?)'; }
 };
+
+// v5.19: relatórios do "Reportar erro". Em cima, os erros que mais se repetem; embaixo, cada relatório.
+// "Copiar" leva o relatório inteiro (com o save) pra colar na conversa com o Claude.
+async function loadBugs() {
+  const box = $('bugs'), top = $('bugsTop'), info = $('bugsInfo');
+  try {
+    const s = await db.collection('bugs').orderBy('at', 'desc').limit(60).get();
+    info.textContent = s.size ? s.size + (s.size >= 60 ? '+ relatórios (mostrando os 60 mais novos)' : ' relatório(s)') : '';
+    if (s.empty) { top.innerHTML = ''; box.innerHTML = '<p class="muted">Nenhum erro reportado. 👍</p>'; return; }
+    const count = {}; s.forEach(d => { const seen = new Set(); for (const e of (d.data().errors || [])) { const k = String(e.msg || '').replace(/\d+/g, '#').slice(0, 110); if (!k || seen.has(k)) continue; seen.add(k); count[k] = (count[k] || 0) + 1; } });
+    const rank = Object.entries(count).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    top.innerHTML = rank.length ? '<div class="card"><b>Erros que mais aparecem</b>' + rank.map(([k, n]) => `<p class="muted">${n}× <code>${esc(k)}</code></p>`).join('') + '</div>' : '';
+    box.innerHTML = '';
+    s.forEach(doc => {
+      const r = doc.data(); const el = document.createElement('div'); el.className = 'card';
+      const errs = (r.errors || []).slice(-6).map(e => `<li><code>${esc(String(e.msg || '').slice(0, 200))}</code> <span class="muted">${esc(String(e.src || '').slice(0, 60))}${e.tab ? ' · ' + esc(e.tab) : ''}</span></li>`).join('');
+      el.innerHTML = `<b>v${esc(r.v || '?')}</b> <span class="muted">${esc(r.at ? new Date(r.at).toLocaleString('pt-BR') : '')} · ${esc(r.store || '')} · ${esc(r.lang || '')} · tela ${esc(r.screen || '')}/${esc(r.tab || '')} · ${esc(r.week || '')}</span>
+        ${r.text ? `<p>💬 ${esc(r.text)}</p>` : '<p class="muted">(sem comentário do jogador)</p>'}${errs ? `<ul>${errs}</ul>` : '<p class="muted">Nenhum erro registrado no aparelho.</p>'}
+        <div class="row"><button class="ghost sm" data-a="copy">📋 Copiar relatório</button><button class="ghost sm" data-a="ok">✅ Resolvido (apagar)</button></div>`;
+      el.querySelector('[data-a="copy"]').onclick = async () => { try { await navigator.clipboard.writeText(JSON.stringify(r)); say('Relatório copiado. Cole na conversa com o Claude.'); } catch (e) { say('Não deu pra copiar: ' + e.message); } };
+      el.querySelector('[data-a="ok"]').onclick = async () => { try { await doc.ref.delete(); el.remove(); } catch (e) { say('Erro: ' + e.message); } };
+      box.appendChild(el);
+    });
+  } catch (e) { box.innerHTML = '<p class="muted">Erro ao carregar: ' + esc(e.message) + ' (publicou as regras novas do Firestore com o bloco bugs?)</p>'; }
+}
+document.addEventListener('click', e => { if (e.target && e.target.id === 'bugsReload') loadBugs(); });
 
 async function loadReports() {
   const box = $('reports');
