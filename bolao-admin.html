@@ -171,7 +171,7 @@
 </head>
 <body>
 <main>
-  <header class="brand"><span class="logo">🏆</span><div><h1>Admin do Bolão</h1><p class="muted">MMA Ranking League · Rumo à Glória · <b class="ver">painel v5.19</b></p></div></header>
+  <header class="brand"><span class="logo">🏆</span><div><h1>Admin do Bolão</h1><p class="muted">MMA Ranking League · Rumo à Glória · <b class="ver">painel v5.21</b></p></div></header>
   <div class="msg" id="msg"></div>
 
   <section id="login" class="card">
@@ -922,9 +922,11 @@ async function loadBugs() {
       const errs = (r.errors || []).slice(-6).map(e => `<li><code>${esc(String(e.msg || '').slice(0, 200))}</code> <span class="muted">${esc(String(e.src || '').slice(0, 60))}${e.tab ? ' · ' + esc(e.tab) : ''}</span></li>`).join('');
       el.innerHTML = `<b>v${esc(r.v || '?')}</b> <span class="muted">${esc(r.at ? new Date(r.at).toLocaleString('pt-BR') : '')} · ${esc(r.store || '')} · ${esc(r.lang || '')} · tela ${esc(r.screen || '')}/${esc(r.tab || '')} · ${esc(r.week || '')}</span>
         ${r.text ? `<p>💬 ${esc(r.text)}</p>` : '<p class="muted">(sem comentário do jogador)</p>'}${errs ? `<ul>${errs}</ul>` : '<p class="muted">Nenhum erro registrado no aparelho.</p>'}
-        <div class="row"><button class="ghost sm" data-a="copy">📋 Copiar relatório</button><button class="ghost sm" data-a="ok">✅ Resolvido (apagar)</button></div>`;
+        <div class="row">${r.fixed ? `<span class="pill">✅ consertado na ${esc(r.fixed)}</span>` : `<input class="sm" data-a="ver" value="${esc(lsGet('adm_ver', ''))}" placeholder="5.21" size="5" style="width:70px"><button class="sm" data-a="fix">✅ Consertado nessa versão</button>`}<button class="ghost sm" data-a="copy">📋 Copiar relatório</button><button class="ghost sm" data-a="ok">🗑️ Apagar</button></div>`;
       el.querySelector('[data-a="copy"]').onclick = async () => { try { await navigator.clipboard.writeText(JSON.stringify(r)); say('Relatório copiado. Cole na conversa com o Claude.'); } catch (e) { say('Não deu pra copiar: ' + e.message); } };
       el.querySelector('[data-a="ok"]').onclick = async () => { try { await doc.ref.delete(); el.remove(); } catch (e) { say('Erro: ' + e.message); } };
+      // v5.21: marca "consertado na versão X"; o jogo avisa quem reportou na próxima vez que abrir
+      const fx = el.querySelector('[data-a="fix"]'); if (fx) fx.onclick = async () => { const v = (el.querySelector('[data-a="ver"]').value || '').trim().slice(0, 12); if (!v) { say('Escreva a versão (ex.: 5.21).'); return; } try { await doc.ref.update({ fixed: v, fixedAt: Date.now() }); lsSet('adm_ver', v); say('Marcado: consertado na ' + v + '. O jogador vai ser avisado.'); loadBugs(); } catch (e) { say('Erro: ' + e.message + ' (publicou as regras novas do Firestore da 5.21?)'); } };
       box.appendChild(el);
     });
   } catch (e) { box.innerHTML = '<p class="muted">Erro ao carregar: ' + esc(e.message) + ' (publicou as regras novas do Firestore com o bloco bugs?)</p>'; }
